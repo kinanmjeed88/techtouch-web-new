@@ -1,10 +1,10 @@
 ---
-title: تطبيق تحرير الصور الاحترافي
+title: طتطبيق تحرير الصور ai
 description: أفضل تطبيق لتعديل الصور وإضافة فلاتر رائعة بكل سهولة.
-imageUrl: "/uploads/picsum1.jpeg"
-timestamp: '2024-07-28T10:00:00Z'
-link: https://example.com/app1
-fileUrl: "/uploads/app1.apk"
+imageUrl: /uploads/1000109398.jpg
+timestamp: 2024-07-28T10:00:00Z
+link: https://t.me/techtouch4
+fileUrl: https://t.me/techtouch4
 category: android-apps
 ---
 هذا التطبيق يوفر مجموعة واسعة من الأدوات الاحترافية لتعديل الصور. يمكنك التحكم في الإضاءة، الألوان، التباين، وإضافة تأثيرات فنية مذهلة. الواجهة سهلة الاستخدام ومناسبة للمبتدئين والمحترفين على حد سواء.
