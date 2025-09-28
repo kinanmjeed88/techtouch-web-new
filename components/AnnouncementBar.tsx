@@ -8,13 +8,13 @@ interface AnnouncementBarProps {
 
 const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ content, link }) => {
   const BarContent = () => (
-    <div className="mt-6 p-3 rounded-lg shadow-md overflow-hidden" style={{ backgroundColor: 'var(--color-header-bg)' }}>
-      <div className="relative flex items-center whitespace-nowrap">
+    <div className="mt-6 p-2 sm:p-3 rounded-lg shadow-md overflow-hidden" style={{ backgroundColor: 'var(--color-header-bg)' }}>
+      <div className="relative flex items-center">
         <div className="flex items-center">
-           <span className="font-bold text-lg border-2 rounded-md py-1 px-3 animate-borderColorPulse" style={{ color: 'var(--color-primary-focus)' }}>
+           <span className="font-bold text-sm sm:text-lg border-2 rounded-md py-1 px-2 sm:px-3 animate-borderColorPulse whitespace-nowrap" style={{ color: 'var(--color-primary-focus)' }}>
             إعلان
           </span>
-          <p className="mr-4 text-gray-300">{content}</p>
+          <p className="mr-2 sm:mr-4 text-gray-300 text-sm sm:text-base">{content}</p>
         </div>
       </div>
     </div>

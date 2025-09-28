@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Post } from '../types';
 
@@ -24,8 +25,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, onSelect, categoryTitle, inde
           {categoryTitle}
         </span>
       </div>
-      <div className="p-6">
-        <h3 className="text-xl font-bold mb-2 group-hover:text-red-400 transition-colors duration-300 text-primary-hover">
+      <div className="p-4 sm:p-6">
+        <h3 className="text-lg sm:text-xl font-bold mb-2 group-hover:text-red-400 transition-colors duration-300 text-primary-hover">
           {post.title}
         </h3>
         <p className="text-gray-400 text-sm">

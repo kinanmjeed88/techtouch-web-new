@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface PaginationProps {
@@ -18,13 +19,13 @@ const Pagination: React.FC<PaginationProps> = ({ totalPosts, postsPerPage, curre
   }
 
   return (
-    <nav className="flex justify-center mt-12" aria-label="Pagination">
-      <ul className="flex items-center space-x-2 space-x-reverse">
+    <nav className="flex justify-center mt-8 sm:mt-12" aria-label="Pagination">
+      <ul className="flex items-center space-x-1 sm:space-x-2 space-x-reverse">
         {pageNumbers.map(number => (
           <li key={number}>
             <button
               onClick={() => onPageChange(number)}
-              className={`px-4 py-2 rounded-lg transition-colors duration-200 font-medium ${
+              className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg transition-colors duration-200 font-medium text-sm sm:text-base ${
                 currentPage === number
                   ? 'bg-red-600 text-white shadow-md btn-primary'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'

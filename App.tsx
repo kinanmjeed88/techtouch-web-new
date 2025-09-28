@@ -142,11 +142,11 @@ const App: React.FC = () => {
 
   const CategoryTabs = () => (
     <div className="mb-8">
-      <h3 className="text-2xl font-bold mb-4 text-white">التصنيفات</h3>
-      <nav className="flex flex-wrap gap-3">
+      <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">التصنيفات</h3>
+      <nav className="flex flex-wrap gap-2 sm:gap-3">
         <button
           onClick={() => handleFilterChange('all')}
-          className={`px-4 py-2 rounded-lg transition-all duration-300 text-lg font-medium ${
+          className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg transition-all duration-300 text-base sm:text-lg font-medium ${
             activeCategory === 'all'
               ? 'bg-red-600 text-white shadow-md btn-primary'
               : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
@@ -158,7 +158,7 @@ const App: React.FC = () => {
           <button
             key={cat.id}
             onClick={() => handleFilterChange(cat.id)}
-            className={`px-4 py-2 rounded-lg transition-all duration-300 text-lg font-medium whitespace-nowrap ${
+            className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg transition-all duration-300 text-base sm:text-lg font-medium whitespace-nowrap ${
               activeCategory === cat.id
                 ? 'bg-red-600 text-white shadow-md btn-primary'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
