@@ -1,4 +1,4 @@
-import React, { ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -8,8 +8,8 @@ interface State {
   hasError: boolean;
 }
 
-// FIX: Changed from extending a destructured `Component` to `React.Component` to resolve a TypeScript error where `this.props` was not being recognized. The named `Component` import from 'react' has been removed accordingly.
-class ErrorBoundary extends React.Component<Props, State> {
+// FIX: Changed to extend the named import `Component` from 'react' to resolve a TypeScript error where `this.props` was not being recognized.
+class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
   };
