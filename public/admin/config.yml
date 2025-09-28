@@ -1,12 +1,6 @@
 backend:
   name: git-gateway
-  # هام جداً: تأكد من أن هذا هو اسم الفرع الصحيح في مستودعك على GitHub.
-  # أغلب المستودعات الجديدة تستخدم 'main'، والقديمة تستخدم 'master'.
-  # إذا كان الاسم خاطئاً، لن يتم حفظ أي تغييرات.
   branch: main
-
-# تم حذف 'publish_mode' لتفعيل النشر المباشر.
-# عند الضغط على "حفظ"، سيتم النشر فوراً.
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
@@ -43,31 +37,25 @@ collections:
               - { label: "YouTube", name: "youtube", widget: "string", required: false }
               - { label: "Telegram", name: "telegram", widget: "string", required: false }
 
-  - name: "posts_collection"
+  - name: "posts"
     label: "المنشورات"
-    files:
-      - file: "public/posts.json"
-        label: "جميع المنشورات"
-        name: "posts"
-        fields:
-          - label: "المنشورات"
-            name: "posts"
-            widget: "list"
-            fields:
-              - { label: "المعرف (ID)", name: "id", widget: "number" }
-              - { label: "العنوان", name: "title", widget: "string" }
-              - { label: "الوصف", name: "description", widget: "text" }
-              - { label: "المحتوى الكامل", name: "content", widget: "markdown" }
-              - { label: "صورة المنشور", name: "imageUrl", widget: "image" }
-              - { label: "التاريخ والوقت", name: "timestamp", widget: "datetime" }
-              - { label: "رابط خارجي", name: "link", widget: "string" }
-              - { label: "رابط تحميل الملف", name: "fileUrl", widget: "file" }
-              - label: "التصنيف"
-                name: "category"
-                widget: "select"
-                options:
-                  - { label: "منشور عام", value: "general" }
-                  - { label: "تطبيق أندرويد", value: "android-apps" }
-                  - { label: "تطبيق أفلام", value: "movie-apps" }
-                  - { label: "تطبيق رياضي", value: "sports-apps" }
-                  - { label: "لعبة", value: "games" }
+    folder: "content/posts"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - { label: "العنوان", name: "title", widget: "string" }
+      - { label: "الوصف", name: "description", widget: "text" }
+      - { label: "صورة المنشور", name: "imageUrl", widget: "image" }
+      - { label: "التاريخ والوقت", name: "timestamp", widget: "datetime" }
+      - { label: "رابط خارجي", name: "link", widget: "string" }
+      - { label: "رابط تحميل الملف", name: "fileUrl", widget: "file" }
+      - label: "التصنيف"
+        name: "category"
+        widget: "select"
+        options:
+          - { label: "منشور عام", value: "general" }
+          - { label: "تطبيق أندرويد", value: "android-apps" }
+          - { label: "تطبيق أفلام", value: "movie-apps" }
+          - { label: "تطبيق رياضي", value: "sports-apps" }
+          - { label: "لعبة", value: "games" }
+      - { label: "المحتوى الكامل", name: "body", widget: "markdown" }
