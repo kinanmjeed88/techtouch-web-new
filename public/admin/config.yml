@@ -4,23 +4,27 @@ backend:
   branch: master
 
 # This should match the publish directory set in Netlify settings.
-# For this project, it's the root.
 publish_mode: editorial_workflow
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
 
 collections:
-  - name: "content"
-    label: "إدارة الموقع"
+  - name: "settings"
+    label: "إعدادات الموقع"
     files:
-      - file: "public/content.json"
-        label: "المحتوى والإعدادات"
-        name: "main"
+      - file: "public/settings.json"
+        label: "الإعدادات العامة"
+        name: "general_settings"
         fields:
-          - { label: "شعار الموقع", name: "logoUrl", widget: "image" }
-          - { label: "نص الإعلان", name: "announcementText", widget: "string" }
-          - { label: "رابط الإعلان (اختياري)", name: "announcementLink", widget: "string", required: false }
+          - label: "الهوية والإعلانات"
+            name: "identity"
+            widget: "object"
+            fields:
+              - { label: "شعار الموقع (الصورة الشخصية)", name: "logoUrl", widget: "image" }
+              - { label: "اسم الموقع", name: "siteName", widget: "string", default: "techtouch0" }
+              - { label: "نص الإعلان", name: "announcementText", widget: "string" }
+              - { label: "رابط الإعلان (اختياري)", name: "announcementLink", widget: "string", required: false }
           - label: "ألوان الموقع"
             name: "colors"
             widget: "object"
@@ -36,6 +40,14 @@ collections:
               - { label: "TikTok", name: "tiktok", widget: "string", required: false }
               - { label: "YouTube", name: "youtube", widget: "string", required: false }
               - { label: "Telegram", name: "telegram", widget: "string", required: false }
+
+  - name: "posts_collection"
+    label: "المنشورات"
+    files:
+      - file: "public/posts.json"
+        label: "جميع المنشورات"
+        name: "posts"
+        fields:
           - label: "المنشورات"
             name: "posts"
             widget: "list"

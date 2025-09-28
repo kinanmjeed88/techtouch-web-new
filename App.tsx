@@ -13,6 +13,7 @@ import type { Category, Post, SiteSettings } from './types';
 interface AppData {
   posts: Post[];
   logoUrl: string;
+  siteName: string;
   announcementText: string;
   announcementLink?: string;
   colors?: SiteSettings['colors'];
@@ -34,25 +35,36 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/content.json?v=${new Date().getTime()}`);
-        if (!response.ok) {
-          throw new Error(`خطأ في تحميل البيانات: ${response.statusText}`);
+        const [settingsResponse, postsResponse] = await Promise.all([
+          fetch(`/settings.json?v=${new Date().getTime()}`),
+          fetch(`/posts.json?v=${new Date().getTime()}`)
+        ]);
+
+        if (!settingsResponse.ok || !postsResponse.ok) {
+          throw new Error(`خطأ في تحميل البيانات`);
         }
-        const data = await response.json();
+        const settingsData = await settingsResponse.json();
+        const postsData = await postsResponse.json();
+        
+        const identity = settingsData.identity || {};
+        const colors = settingsData.colors;
+        const socials = settingsData.socials;
+
         setAppData({
-          posts: data.posts || [],
-          logoUrl: data.logoUrl || '',
-          announcementText: data.announcementText || '',
-          announcementLink: data.announcementLink,
-          colors: data.colors,
-          socials: data.socials,
+          posts: postsData.posts || [],
+          logoUrl: identity.logoUrl || '',
+          siteName: identity.siteName || 'techtouch0',
+          announcementText: identity.announcementText || '',
+          announcementLink: identity.announcementLink,
+          colors: colors,
+          socials: socials,
         });
 
-        if (data.colors) {
+        if (colors) {
           const root = document.documentElement;
-          const primaryColor = data.colors.primary || '#ef4444';
-          root.style.setProperty('--color-header-bg', data.colors.header || '#1f2937');
-          root.style.setProperty('--color-card-bg', data.colors.card || 'rgba(31, 41, 55, 0.5)');
+          const primaryColor = colors.primary || '#ef4444';
+          root.style.setProperty('--color-header-bg', colors.header || '#1f2937');
+          root.style.setProperty('--color-card-bg', colors.card || 'rgba(31, 41, 55, 0.5)');
           root.style.setProperty('--color-primary', primaryColor);
           root.style.setProperty('--color-primary-hover', `${primaryColor}CC`);
           root.style.setProperty('--color-primary-focus', `${primaryColor}B3`);
@@ -162,7 +174,7 @@ const App: React.FC = () => {
   return (
     <div className="bg-gray-900 min-h-screen text-white">
       <div className="container mx-auto px-4 py-8">
-        <Header onSearch={handleSearchChange} logoUrl={appData.logoUrl} />
+        <Header onSearch={handleSearchChange} logoUrl={appData.logoUrl} siteName={appData.siteName} />
         <AnnouncementBar content={appData.announcementText} link={appData.announcementLink} />
 
         <main className="mt-8">
