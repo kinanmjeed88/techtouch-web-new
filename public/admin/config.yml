@@ -1,10 +1,12 @@
-
 backend:
   name: git-gateway
-  branch: master
+  # هام جداً: تأكد من أن هذا هو اسم الفرع الصحيح في مستودعك على GitHub.
+  # أغلب المستودعات الجديدة تستخدم 'main'، والقديمة تستخدم 'master'.
+  # إذا كان الاسم خاطئاً، لن يتم حفظ أي تغييرات.
+  branch: main
 
-# This should match the publish directory set in Netlify settings.
-publish_mode: editorial_workflow
+# تم حذف 'publish_mode' لتفعيل النشر المباشر.
+# عند الضغط على "حفظ"، سيتم النشر فوراً.
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
