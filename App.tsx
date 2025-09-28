@@ -102,12 +102,12 @@ const App: React.FC = () => {
     games: 'لعبة',
   };
 
-  const filteredPosts = appData?.posts
+  const filteredPosts = (appData?.posts || [])
     .filter(post => activeCategory === 'all' || post.category === activeCategory)
     .filter(post =>
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.description.toLowerCase().includes(searchQuery.toLowerCase())
-    ) || [];
+    );
   
   const paginatedPosts = filteredPosts.slice(
     (currentPage - 1) * POSTS_PER_PAGE,
