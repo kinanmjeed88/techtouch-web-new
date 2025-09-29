@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import AnnouncementBar from './components/AnnouncementBar';
@@ -179,7 +180,7 @@ const App: React.FC = () => {
 
         <main className="mt-8">
           {selectedPost ? (
-            <PostDetail post={selectedPost} onBack={handleGoHome} />
+            <PostDetail post={selectedPost} onBack={handleGoHome} siteName={appData.siteName} />
           ) : (
             <div>
               <CategoryTabs />

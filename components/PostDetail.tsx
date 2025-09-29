@@ -1,13 +1,16 @@
 
+
 import React from 'react';
 import type { Post } from '../types';
+import { FacebookIcon, TwitterIcon, WhatsAppIcon } from './Icons';
 
 interface PostDetailProps {
   post: Post;
   onBack: () => void;
+  siteName: string;
 }
 
-const PostDetail: React.FC<PostDetailProps> = ({ post, onBack }) => {
+const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
   const formattedDate = new Date(post.timestamp).toLocaleDateString('ar-EG', {
     year: 'numeric',
     month: 'long',
@@ -15,6 +18,12 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack }) => {
     hour: '2-digit',
     minute: '2-digit',
   });
+
+  const pageUrl = window.location.href;
+  const shareText = `${post.title} - ${siteName}`;
+  const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}&quote=${encodeURIComponent(shareText)}`;
+  const twitterShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(shareText)}`;
+  const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + pageUrl)}`;
 
   return (
     <div className="p-4 sm:p-6 rounded-lg shadow-xl" style={{ backgroundColor: 'var(--color-header-bg)'}}>
@@ -46,6 +55,21 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack }) => {
           >
             تحميل الملف
           </a>
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-gray-700">
+            <h4 className="text-center text-lg font-semibold text-gray-400 mb-4">مشاركة المنشور</h4>
+            <div className="flex justify-center items-center gap-6">
+                <a href={facebookShareUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover">
+                    <FacebookIcon className="w-7 h-7" />
+                </a>
+                <a href={twitterShareUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on Twitter" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover">
+                    <TwitterIcon className="w-7 h-7" />
+                </a>
+                <a href={whatsappShareUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover">
+                    <WhatsAppIcon className="w-7 h-7" />
+                </a>
+            </div>
         </div>
       </article>
     </div>
