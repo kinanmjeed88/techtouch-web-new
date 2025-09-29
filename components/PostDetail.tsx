@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import type { Post } from '../types';
 import { FacebookIcon, TwitterIcon, WhatsAppIcon, SparklesIcon, EyeIcon, TelegramIcon } from './Icons';
 import { GoogleGenAI } from '@google/genai';
-import ReactionButtons from './ReactionButtons';
 
 interface PostDetailProps {
   post: Post;
@@ -77,14 +76,13 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
 
       <article>
         <h1 className="text-2xl sm:text-4xl font-bold mb-4">{post.title}</h1>
-        <div className="flex items-center justify-between flex-wrap gap-4 text-gray-400 text-sm mb-6">
+        <div className="flex items-center justify-start flex-wrap gap-4 text-gray-400 text-sm mb-6">
             <div className="flex items-center gap-x-4">
                 <span>{formattedDate}</span>
                 <div className="flex items-center">
-                    <EyeIcon className="w-5 h-5" />
+                    <span className="text-xl" aria-hidden="true">👁️‍🗨️</span>
                 </div>
             </div>
-            <ReactionButtons postId={post.id} />
         </div>
         
         {post.imageUrl && <img src={post.imageUrl} alt={post.title} className="w-full h-auto max-h-[300px] sm:max-h-[500px] object-cover rounded-lg mb-6 shadow-lg" />}

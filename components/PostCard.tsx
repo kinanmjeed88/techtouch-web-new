@@ -2,7 +2,6 @@
 import React from 'react';
 import type { Post } from '../types';
 import { EyeIcon } from './Icons';
-import ReactionButtons from './ReactionButtons';
 
 interface PostCardProps {
   post: Post;
@@ -47,12 +46,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, onSelect, categoryTitle, inde
           {post.description}
         </p>
          <div 
-          className="mt-4 pt-3 border-t border-gray-700/50 flex items-center justify-between text-xs"
+          className="mt-4 pt-3 border-t border-gray-700/50 flex items-center justify-end text-xs"
           style={{ color: 'var(--color-card-description)' }}
         >
-          <ReactionButtons postId={post.id} />
           <div className="flex items-center">
-            <EyeIcon className="w-4 h-4" />
+            <span className="text-lg" aria-hidden="true">👁️‍🗨️</span>
           </div>
         </div>
       </div>
