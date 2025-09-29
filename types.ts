@@ -11,6 +11,7 @@ export interface Post {
   link: string;
   fileUrl: string;
   category: Category;
+  views: number;
 }
 
 export interface SiteSettings {
