@@ -5,7 +5,7 @@ description: Google AI Studio هي منصة تجريبية مجانية من ج�
 imageUrl: /uploads/1000133425.jpg
 timestamp: 2025-09-29T13:30:00.000Z
 link: https://ai.google.dev
-fileUrl: https://ai.google.dev
+fileUrl: ""
 category: "2"
 ---
 ## منصة الذكاء الاصطناعي
