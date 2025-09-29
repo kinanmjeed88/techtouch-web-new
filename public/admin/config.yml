@@ -29,8 +29,11 @@ collections:
             widget: "object"
             fields:
               - { label: "خلفية الرأسية (Header)", name: "header", widget: "color", required: true }
-              - { label: "خلفية البطاقات", name: "card", widget: "color", required: true }
+              - { label: "خلفية بطاقة المنشور", name: "card", widget: "color", required: true }
               - { label: "اللون الرئيسي (للحواف والأزرار)", name: "primary", widget: "color", required: true }
+              - { label: "لون اسم الموقع", name: "siteName", widget: "color", required: false, default: "#FFFFFF" }
+              - { label: "لون عنوان بطاقة المنشور", name: "cardTitle", widget: "color", required: false, default: "#FFFFFF" }
+              - { label: "لون نص بطاقة المنشور", name: "cardDescription", widget: "color", required: false, default: "#D1D5DB" }
           - label: "روابط التواصل الاجتماعي"
             name: "socials"
             widget: "object"

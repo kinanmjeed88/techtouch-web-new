@@ -1,6 +1,7 @@
 
 
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header';
 import AnnouncementBar from './components/AnnouncementBar';
@@ -82,6 +83,9 @@ const App: React.FC = () => {
           root.style.setProperty('--color-primary', primaryColor);
           root.style.setProperty('--color-primary-hover', `${primaryColor}CC`);
           root.style.setProperty('--color-primary-focus', `${primaryColor}B3`);
+          root.style.setProperty('--color-site-name', colors.siteName || '#FFFFFF');
+          root.style.setProperty('--color-card-title', colors.cardTitle || '#FFFFFF');
+          root.style.setProperty('--color-card-description', colors.cardDescription || '#D1D5DB');
         }
 
       } catch (err) {

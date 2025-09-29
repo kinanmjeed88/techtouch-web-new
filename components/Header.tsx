@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 import { SearchIcon, ChatBubbleIcon } from './Icons';
 
@@ -26,7 +27,12 @@ const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onGoHome, 
             style={{ borderColor: 'var(--color-primary)' }}
             />
         )}
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white transition-colors duration-300 group-hover:text-red-400 text-primary-hover">{siteName}</h1>
+        <h1 
+          className="text-3xl sm:text-4xl md:text-5xl font-bold transition-colors duration-300 group-hover:text-red-400 text-primary-hover"
+          style={{ color: 'var(--color-site-name)' }}
+        >
+          {siteName}
+        </h1>
       </button>
       <div className="flex w-full max-w-lg items-center gap-2 sm:gap-3">
         <div className="relative flex-grow">

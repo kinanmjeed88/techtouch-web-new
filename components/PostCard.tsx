@@ -33,13 +33,22 @@ const PostCard: React.FC<PostCardProps> = ({ post, onSelect, categoryTitle, inde
         </span>
       </div>
       <div className="p-4 sm:p-6 flex flex-col flex-grow">
-        <h3 className="text-lg sm:text-xl font-bold mb-2 group-hover:text-red-400 transition-colors duration-300 text-primary-hover">
+        <h3 
+          className="text-lg sm:text-xl font-bold mb-2 group-hover:text-red-400 transition-colors duration-300 text-primary-hover"
+          style={{ color: 'var(--color-card-title)' }}
+        >
           {post.title}
         </h3>
-        <p className="text-gray-400 text-sm flex-grow">
+        <p 
+          className="text-sm flex-grow"
+          style={{ color: 'var(--color-card-description)' }}
+        >
           {post.description}
         </p>
-         <div className="mt-4 pt-3 border-t border-gray-700/50 flex items-center text-gray-400 text-xs">
+         <div 
+          className="mt-4 pt-3 border-t border-gray-700/50 flex items-center text-xs"
+          style={{ color: 'var(--color-card-description)' }}
+        >
           <EyeIcon className="w-4 h-4" />
         </div>
       </div>

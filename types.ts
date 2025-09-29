@@ -23,6 +23,9 @@ export interface SiteSettings {
         header: string;
         card: string;
         primary: string;
+        siteName?: string;
+        cardTitle?: string;
+        cardDescription?: string;
     };
     socials?: {
         facebook?: string;
