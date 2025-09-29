@@ -79,11 +79,10 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
             <span>{formattedDate}</span>
             <div className="flex items-center gap-x-1.5">
                 <EyeIcon className="w-5 h-5" />
-                <span>{post.views.toLocaleString('ar-EG')} مشاهدة</span>
             </div>
         </div>
         
-        <img src={post.imageUrl} alt={post.title} className="w-full h-auto max-h-[300px] sm:max-h-[500px] object-cover rounded-lg mb-6 shadow-lg" />
+        {post.imageUrl && <img src={post.imageUrl} alt={post.title} className="w-full h-auto max-h-[300px] sm:max-h-[500px] object-cover rounded-lg mb-6 shadow-lg" />}
         
         <div className="prose prose-invert max-w-none text-gray-300 text-sm sm:text-base leading-relaxed" dangerouslySetInnerHTML={{ __html: processContent(post.content) }} />
 
@@ -127,23 +126,29 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
         </div>
 
 
-        <div className="mt-8 pt-6 border-t border-gray-700 flex flex-col sm:flex-row gap-4">
-          <a 
-            href={post.link} 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="flex-1 text-center text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg transition-transform duration-300 transform hover:scale-105 btn-primary"
-          >
-            زيارة الرابط
-          </a>
-          <a 
-            href={post.fileUrl} 
-            download 
-            className="flex-1 text-center bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg transition-transform duration-300 transform hover:scale-105"
-          >
-            تحميل الملف
-          </a>
-        </div>
+        {(post.link || post.fileUrl) && (
+          <div className="mt-8 pt-6 border-t border-gray-700 flex flex-col sm:flex-row gap-4">
+            {post.link && (
+              <a 
+                href={post.link} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex-1 text-center text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg transition-transform duration-300 transform hover:scale-105 btn-primary"
+              >
+                زيارة الرابط
+              </a>
+            )}
+            {post.fileUrl && (
+              <a 
+                href={post.fileUrl} 
+                download 
+                className="flex-1 text-center bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-lg transition-transform duration-300 transform hover:scale-105"
+              >
+                تحميل الملف
+              </a>
+            )}
+          </div>
+        )}
 
         <div className="mt-8 pt-6 border-t border-gray-700">
             <h4 className="text-center text-lg font-semibold text-gray-400 mb-4">مشاركة المنشور</h4>

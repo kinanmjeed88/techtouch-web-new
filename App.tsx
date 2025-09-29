@@ -1,6 +1,7 @@
 
 
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header';
 import AnnouncementBar from './components/AnnouncementBar';
 import PostDetail from './components/PostDetail';
@@ -9,7 +10,7 @@ import FloatingButtons from './components/FloatingButtons';
 import PostCard from './components/PostCard';
 import Pagination from './components/Pagination';
 import SkeletonLoader from './components/SkeletonLoader';
-import AIChat from './components/ImageEditor'; // Renamed ImageEditor to AIChat for clarity
+import AIChat from './components/ImageEditor';
 import type { Category, Post, SiteSettings } from './types';
 
 interface AppData {
@@ -20,6 +21,7 @@ interface AppData {
   announcementLink?: string;
   announcementLabel: string;
   announcementBgColor: string;
+  announcementTextColor?: string;
   colors?: SiteSettings['colors'];
   socials?: SiteSettings['socials'];
 }
@@ -28,6 +30,7 @@ const POSTS_PER_PAGE = 6;
 
 const App: React.FC = () => {
   const [appData, setAppData] = useState<AppData | null>(null);
+  const [categories, setCategories] = useState<{ id: string; title: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -40,16 +43,18 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [settingsResponse, postsResponse] = await Promise.all([
+        const [settingsResponse, postsResponse, categoriesResponse] = await Promise.all([
           fetch(`/settings.json?v=${new Date().getTime()}`),
-          fetch(`/posts.json?v=${new Date().getTime()}`)
+          fetch(`/posts.json?v=${new Date().getTime()}`),
+          fetch(`/categories.json?v=${new Date().getTime()}`),
         ]);
 
-        if (!settingsResponse.ok || !postsResponse.ok) {
+        if (!settingsResponse.ok || !postsResponse.ok || !categoriesResponse.ok) {
           throw new Error(`خطأ في تحميل البيانات`);
         }
         const settingsData = await settingsResponse.json();
         const postsData = await postsResponse.json();
+        const categoriesData = await categoriesResponse.json();
         
         const identity = settingsData.identity || {};
         const colors = settingsData.colors;
@@ -63,9 +68,11 @@ const App: React.FC = () => {
           announcementLink: identity.announcementLink,
           announcementLabel: identity.announcementLabel || 'إعلان',
           announcementBgColor: identity.announcementBgColor || 'var(--color-header-bg)',
+          announcementTextColor: identity.announcementTextColor,
           colors: colors,
           socials: socials,
         });
+        setCategories(categoriesData.categories || []);
 
         if (colors) {
           const root = document.documentElement;
@@ -112,22 +119,13 @@ const App: React.FC = () => {
     setSearchQuery(query);
     setCurrentPage(1);
   };
-
-  const categories: { id: Category; title: string }[] = [
-    { id: 'general', title: '📚 منشورات عامة' },
-    { id: 'android-apps', title: '📱 تطبيقات أندرويد' },
-    { id: 'movie-apps', title: '🎬 تطبيقات أفلام' },
-    { id: 'sports-apps', title: '⚽ تطبيقات رياضية' },
-    { id: 'games', title: '🎮 الألعاب' },
-  ];
-
-  const categoryPostTitles: { [key in Category]: string } = {
-    general: 'منشور عام',
-    'android-apps': 'تطبيق أندرويد',
-    'movie-apps': 'تطبيق أفلام',
-    'sports-apps': 'تطبيق رياضي',
-    games: 'لعبة',
-  };
+  
+  const categoryTitleMap = useMemo(() => {
+    return categories.reduce((acc, cat) => {
+      acc[cat.id] = cat.title;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [categories]);
 
   const filteredPosts = (appData?.posts || [])
     .filter(post => activeCategory === 'all' || post.category === activeCategory)
@@ -153,7 +151,7 @@ const App: React.FC = () => {
                 key={post.id} 
                 post={post} 
                 onSelect={handleSelectPost}
-                categoryTitle={categoryPostTitles[post.category]}
+                categoryTitle={categoryTitleMap[post.category] || post.category}
                 index={index}
               />
             ))}
@@ -193,10 +191,10 @@ const App: React.FC = () => {
   const CategoryTabs = () => (
     <div className="mb-8">
       <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">التصنيفات</h3>
-      <nav className="flex flex-wrap gap-2 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
         <button
           onClick={() => handleFilterChange('all')}
-          className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg transition-all duration-300 text-base sm:text-lg font-medium ${
+          className={`w-full text-center px-3 py-1 sm:px-4 sm:py-2 rounded-lg transition-all duration-300 text-base sm:text-lg font-medium ${
             activeCategory === 'all'
               ? 'bg-red-600 text-white shadow-md btn-primary'
               : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
@@ -208,7 +206,7 @@ const App: React.FC = () => {
           <button
             key={cat.id}
             onClick={() => handleFilterChange(cat.id)}
-            className={`px-3 py-1 sm:px-4 sm:py-2 rounded-lg transition-all duration-300 text-base sm:text-lg font-medium whitespace-nowrap ${
+            className={`w-full text-center px-3 py-1 sm:px-4 sm:py-2 rounded-lg transition-all duration-300 text-base sm:text-lg font-medium whitespace-nowrap ${
               activeCategory === cat.id
                 ? 'bg-red-600 text-white shadow-md btn-primary'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
@@ -217,7 +215,7 @@ const App: React.FC = () => {
             {cat.title}
           </button>
         ))}
-      </nav>
+      </div>
     </div>
   );
 
@@ -236,6 +234,7 @@ const App: React.FC = () => {
           link={appData.announcementLink} 
           label={appData.announcementLabel}
           bgColor={appData.announcementBgColor}
+          textColor={appData.announcementTextColor}
         />
 
         <main className="mt-8">

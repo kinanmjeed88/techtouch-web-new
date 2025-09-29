@@ -21,7 +21,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, onSelect, categoryTitle, inde
       }}
     >
       <div className="relative">
-        <img src={post.imageUrl} alt={post.title} className="w-full h-48 object-cover" />
+        {post.imageUrl ? (
+          <img src={post.imageUrl} alt={post.title} className="w-full h-48 object-cover" />
+        ) : (
+          <div className="w-full h-48 bg-gray-700 flex items-center justify-center">
+            <span className="text-gray-500">لا توجد صورة</span>
+          </div>
+        )}
         <span className="absolute top-2 right-2 bg-red-600/80 text-white text-xs font-bold px-2 py-1 rounded btn-primary">
           {categoryTitle}
         </span>
@@ -34,8 +40,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onSelect, categoryTitle, inde
           {post.description}
         </p>
          <div className="mt-4 pt-3 border-t border-gray-700/50 flex items-center text-gray-400 text-xs">
-          <EyeIcon className="w-4 h-4 ml-2" />
-          <span>{post.views.toLocaleString('ar-EG')} مشاهدة</span>
+          <EyeIcon className="w-4 h-4" />
         </div>
       </div>
     </div>

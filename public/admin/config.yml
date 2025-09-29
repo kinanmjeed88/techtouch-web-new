@@ -20,6 +20,7 @@ collections:
               - { label: "شعار الموقع (الصورة الشخصية)", name: "logoUrl", widget: "image", required: true }
               - { label: "اسم الموقع", name: "siteName", widget: "string", default: "techtouch0", required: true }
               - { label: "نص الإعلان", name: "announcementText", widget: "string", required: true }
+              - { label: "لون نص الإعلان", name: "announcementTextColor", widget: "color", required: false, default: "#D1D5DB" }
               - { label: "رابط الإعلان (اختياري)", name: "announcementLink", widget: "string", required: false }
               - { label: "كلمة الإعلان (مثال: إعلان, جديد)", name: "announcementLabel", widget: "string", default: "إعلان", required: false }
               - { label: "لون خلفية شريط الإعلان", name: "announcementBgColor", widget: "color", required: false, default: "#1f2937" }
@@ -39,6 +40,15 @@ collections:
               - { label: "YouTube", name: "youtube", widget: "string", required: false }
               - { label: "Telegram", name: "telegram", widget: "string", required: false }
 
+  - name: "categories"
+    label: "التصنيفات"
+    folder: "content/categories"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "عنوان التصنيف (مثال: 📱 تطبيقات أندرويد)", name: "title", widget: "string", required: true }
+      - { label: "المعرّف ID (مثال: android-apps, يجب أن يكون فريداً باللغة الإنجليزية)", name: "id", widget: "string", required: true }
+
   - name: "posts"
     label: "المنشورات"
     folder: "content/posts"
@@ -47,18 +57,16 @@ collections:
     fields:
       - { label: "العنوان", name: "title", widget: "string", required: true }
       - { label: "الوصف", name: "description", widget: "text", required: true }
-      - { label: "صورة المنشور", name: "imageUrl", widget: "image", required: true }
+      - { label: "صورة المنشور", name: "imageUrl", widget: "image", required: false }
       - { label: "التاريخ والوقت", name: "timestamp", widget: "datetime", required: true }
-      - { label: "رابط خارجي", name: "link", widget: "string", required: true }
-      - { label: "رابط تحميل الملف", name: "fileUrl", widget: "file", required: true }
+      - { label: "رابط خارجي", name: "link", widget: "string", required: false }
+      - { label: "رابط تحميل الملف", name: "fileUrl", widget: "file", required: false }
       - label: "التصنيف"
         name: "category"
-        widget: "select"
-        options:
-          - { label: "منشور عام", value: "general" }
-          - { label: "تطبيق أندرويد", value: "android-apps" }
-          - { label: "تطبيق أفلام", value: "movie-apps" }
-          - { label: "تطبيق رياضي", value: "sports-apps" }
-          - { label: "لعبة", value: "games" }
+        widget: "relation"
+        collection: "categories"
+        searchFields: ["title"]
+        valueField: "id"
+        displayFields: ["title"]
         required: true
       - { label: "المحتوى", name: "body", widget: "text", required: true }

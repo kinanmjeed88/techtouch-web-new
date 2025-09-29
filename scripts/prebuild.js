@@ -5,16 +5,16 @@ import matter from 'gray-matter';
 
 const CWD = process.cwd();
 const POSTS_DIR = path.join(CWD, 'content/posts');
-const OUTPUT_PATH = path.join(CWD, 'public/posts.json');
+const CATEGORIES_DIR = path.join(CWD, 'content/categories');
+const POSTS_OUTPUT_PATH = path.join(CWD, 'public/posts.json');
+const CATEGORIES_OUTPUT_PATH = path.join(CWD, 'public/categories.json');
 
 function generatePosts() {
-  // 1. Check if content/posts directory exists, create if not
   if (!fs.existsSync(POSTS_DIR)) {
     console.log("Creating 'content/posts' directory...");
     fs.mkdirSync(POSTS_DIR, { recursive: true });
   }
 
-  // 2. Read all .md files
   const fileNames = fs.readdirSync(POSTS_DIR).filter(file => file.endsWith('.md'));
 
   if (fileNames.length === 0) {
@@ -22,22 +22,17 @@ function generatePosts() {
     return [];
   }
 
-  // 3. Parse each file and extract frontmatter + content
   const allPostsData = fileNames.map(fileName => {
     const filePath = path.join(POSTS_DIR, fileName);
     const fileContents = fs.readFileSync(filePath, 'utf8');
     const { data, content } = matter(fileContents);
 
-    // Basic validation
     if (!data.timestamp || !data.title) {
         console.warn(`Skipping ${fileName}: missing 'timestamp' or 'title' in frontmatter.`);
         return null;
     }
     
-    // Generate a unique ID from the timestamp for React keys
     const id = new Date(data.timestamp).getTime();
-
-    // Generate a pseudo-random view count
     const creationDate = new Date(data.timestamp);
     const today = new Date();
     const diffTime = Math.max(0, today - creationDate); 
@@ -54,25 +49,61 @@ function generatePosts() {
       content,
       views,
     };
-  }).filter(Boolean); // Filter out nulls from skipped files
+  }).filter(Boolean);
 
-  // 4. Sort posts by timestamp (newest first)
   allPostsData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  
   return allPostsData;
+}
+
+function generateCategories() {
+  if (!fs.existsSync(CATEGORIES_DIR)) {
+    console.log("Creating 'content/categories' directory...");
+    fs.mkdirSync(CATEGORIES_DIR, { recursive: true });
+  }
+
+  const fileNames = fs.readdirSync(CATEGORIES_DIR).filter(file => file.endsWith('.md'));
+
+  if (fileNames.length === 0) {
+    console.warn("No markdown files found in 'content/categories'. Generating an empty categories.json.");
+    return [];
+  }
+
+  const allCategoriesData = fileNames.map(fileName => {
+    const filePath = path.join(CATEGORIES_DIR, fileName);
+    const fileContents = fs.readFileSync(filePath, 'utf8');
+    const { data } = matter(fileContents);
+
+    if (!data.id || !data.title) {
+        console.warn(`Skipping ${fileName}: missing 'id' or 'title' in frontmatter.`);
+        return null;
+    }
+
+    return {
+      id: data.id,
+      title: data.title,
+    };
+  }).filter(Boolean);
+
+  return allCategoriesData;
 }
 
 try {
   const posts = generatePosts();
-  const outputData = { posts };
+  const categories = generateCategories();
   
-  // 5. Write to public/posts.json
-  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(outputData, null, 2));
-  console.log(`✅ Successfully generated ${posts.length} posts to ${OUTPUT_PATH}`);
+  const postsOutputData = { posts };
+  const categoriesOutputData = { categories };
+  
+  fs.writeFileSync(POSTS_OUTPUT_PATH, JSON.stringify(postsOutputData, null, 2));
+  console.log(`✅ Successfully generated ${posts.length} posts to ${POSTS_OUTPUT_PATH}`);
+
+  fs.writeFileSync(CATEGORIES_OUTPUT_PATH, JSON.stringify(categoriesOutputData, null, 2));
+  console.log(`✅ Successfully generated ${categories.length} categories to ${CATEGORIES_OUTPUT_PATH}`);
 
 } catch (error) {
-  console.error('❌ Error generating posts.json:', error);
-  // Create an empty file to prevent the site build from failing
-  fs.writeFileSync(OUTPUT_PATH, JSON.stringify({ posts: [] }, null, 2));
-  process.exit(1); // Exit with error code
+  console.error('❌ Error during prebuild:', error);
+  // Create empty files to prevent the site build from failing
+  fs.writeFileSync(POSTS_OUTPUT_PATH, JSON.stringify({ posts: [] }, null, 2));
+  fs.writeFileSync(CATEGORIES_OUTPUT_PATH, JSON.stringify({ categories: [] }, null, 2));
+  process.exit(1);
 }

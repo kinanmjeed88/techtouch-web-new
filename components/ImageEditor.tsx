@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Chat } from '@google/genai';
-import { SparklesIcon, SendIcon, DownloadIcon } from './Icons';
+import { SparklesIcon, SendIcon } from './Icons';
 
 // Define ai instance outside the component to avoid re-creation on re-renders
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -9,8 +9,6 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 interface Message {
     role: 'user' | 'model';
     text?: string;
-    imageUrl?: string;
-    imageName?: string;
 }
 
 const AIChat: React.FC = () => {
@@ -32,7 +30,7 @@ const AIChat: React.FC = () => {
         setChat(chatSession);
         const initialMessage: Message = { 
             role: 'model', 
-            text: 'مرحباً بك في موقع techtouch! كيف يمكنني مساعدتك اليوم؟\n\nلتوليد صورة، ابدأ رسالتك بكلمة "ارسم"، مثلاً: "ارسم قطة تركب دراجة".'
+            text: 'مرحباً بك في موقع techtouch! كيف يمكنني مساعدتك اليوم؟'
         };
         setMessages([initialMessage]);
     }, []);
@@ -50,15 +48,6 @@ const AIChat: React.FC = () => {
         }
     }, [userInput]);
 
-    const handleSaveImage = (imageUrl: string, imageName: string = 'ai-generated-image') => {
-        const link = document.createElement('a');
-        link.href = imageUrl;
-        link.download = `${imageName}.jpeg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
     const handleSendMessage = async () => {
         if (!userInput.trim() || !chat || isLoading) return;
 
@@ -69,97 +58,34 @@ const AIChat: React.FC = () => {
         setIsLoading(true);
         setError(null);
 
-        const isImageRequest = userMessageText.trim().toLowerCase().startsWith('ارسم');
-
         try {
-            if (isImageRequest) {
-                const imagePrompt = userMessageText.replace(/^ارسم/i, '').trim();
+            const responseStream = await chat.sendMessageStream({ message: userMessageText });
+            let modelResponse = '';
+            setMessages(prev => [...prev, { role: 'model', text: '' }]);
 
-                if (!imagePrompt) {
-                    const errorMessage = { role: 'model', text: '⚠️ يرجى تقديم وصف للصورة بعد كلمة "ارسم".' };
-                    setMessages(prev => [...prev, errorMessage]);
-                    setIsLoading(false);
-                    return;
-                }
-
-                setMessages(prev => [...prev, { role: 'model', text: `🎨 جاري توليد صورة لـ: "${imagePrompt}"...` }]);
-                
-                const response = await ai.models.generateImages({
-                    model: 'imagen-4.0-generate-001',
-                    prompt: imagePrompt,
-                    config: { numberOfImages: 1, outputMimeType: 'image/jpeg' },
-                });
-
-                if (!response.generatedImages || response.generatedImages.length === 0) {
-                    throw new Error("API did not return any images.");
-                }
-                
-                const base64ImageBytes = response.generatedImages[0].image.imageBytes;
-                const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
-                const imageName = imagePrompt.slice(0, 30).replace(/[^a-zA-Z0-9أ-ي-]/g, '_');
-
-                const imageMessage: Message = { role: 'model', imageUrl, imageName };
-
+            for await (const chunk of responseStream) {
+                modelResponse += chunk.text;
                 setMessages(prev => {
                     const newMessages = [...prev];
-                    newMessages[newMessages.length - 1] = imageMessage;
+                    newMessages[newMessages.length - 1].text = modelResponse;
                     return newMessages;
                 });
-
-            } else {
-                const responseStream = await chat.sendMessageStream({ message: userMessageText });
-                let modelResponse = '';
-                setMessages(prev => [...prev, { role: 'model', text: '' }]);
-
-                for await (const chunk of responseStream) {
-                    modelResponse += chunk.text;
-                    setMessages(prev => {
-                        const newMessages = [...prev];
-                        newMessages[newMessages.length - 1].text = modelResponse;
-                        return newMessages;
-                    });
-                }
             }
         } catch (err) {
             console.error("Error sending message:", err);
-
-            if (isImageRequest) {
-                let errorText = '⚠️ فشل توليد الصورة. حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى بعد قليل.';
-                if (err instanceof Error) {
-                    const lowerCaseError = err.message.toLowerCase();
-                    if (lowerCaseError.includes('policy') || lowerCaseError.includes('safety')) {
-                         errorText = '⚠️ فشل توليد الصورة.\nقد يخالف الطلب سياسات المحتوى. يرجى محاولة وصف مختلف وأكثر عمومية.';
-                    } else if (lowerCaseError.includes('permission') || lowerCaseError.includes('access denied') || lowerCaseError.includes('not found')) {
-                         errorText = '⚠️ فشل توليد الصورة.\nقد لا يسمح مفتاح API الحالي بتوليد الصور. يرجى مراجعة إعدادات الخطة.';
-                    } else if (err.message.includes('API key')) {
-                        errorText = '⚠️ حدث خطأ في الاتصال بالخادم. يرجى التحقق من الإعدادات والمحاولة لاحقاً.';
-                    }
-                }
-                
-                setMessages(prev => {
-                    const newMessages = [...prev];
-                    const lastMessage = newMessages[newMessages.length - 1];
-                    if (lastMessage && lastMessage.role === 'model' && lastMessage.text?.startsWith('🎨')) {
-                        lastMessage.text = errorText;
-                        return newMessages;
-                    }
-                    return [...prev, { role: 'model', text: errorText }];
-                });
-            } else {
-                let errorMessage = 'عذراً، حدث خطأ أثناء التواصل مع الذكاء الاصطناعي. يرجى المحاولة مرة أخرى.';
-                if (err instanceof Error && err.message.includes('API key')) {
-                    errorMessage = 'حدث خطأ في الاتصال بالخادم. يرجى التحقق من إعدادات الاتصال والمحاولة لاحقاً.';
-                }
-                setError(errorMessage);
-                
-                setMessages(prev => {
-                    const lastMessage = prev[prev.length - 1];
-                    if (lastMessage && lastMessage.role === 'model' && lastMessage.text === '') {
-                        return prev.slice(0, -1);
-                    }
-                    return prev;
-                });
+            let errorMessage = 'عذراً، حدث خطأ أثناء التواصل مع الذكاء الاصطناعي. يرجى المحاولة مرة أخرى.';
+            if (err instanceof Error && err.message.includes('API key')) {
+                errorMessage = 'حدث خطأ في الاتصال بالخادم. يرجى التحقق من إعدادات الاتصال والمحاولة لاحقاً.';
             }
+            setError(errorMessage);
+            
+            setMessages(prev => {
+                const lastMessage = prev[prev.length - 1];
+                if (lastMessage && lastMessage.role === 'model' && lastMessage.text === '') {
+                    return prev.slice(0, -1);
+                }
+                return prev;
+            });
         } finally {
             setIsLoading(false);
         }
@@ -185,19 +111,6 @@ const AIChat: React.FC = () => {
                         )}
                         <div className={`max-w-md lg:max-w-2xl p-3 rounded-xl ${msg.role === 'user' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-200'}`} style={msg.role === 'user' ? { backgroundColor: 'var(--color-primary)' } : {}}>
                             {msg.text && <p className="whitespace-pre-wrap text-sm sm:text-base">{msg.text || '...'}</p>}
-                             {msg.imageUrl && (
-                                <div className="relative group">
-                                    <img src={msg.imageUrl} alt={msg.imageName || 'Generated image'} className="rounded-lg max-w-full" />
-                                    <button
-                                        onClick={() => handleSaveImage(msg.imageUrl, msg.imageName)}
-                                        className="absolute bottom-2 right-2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                        title="حفظ الصورة"
-                                        aria-label="حفظ الصورة"
-                                    >
-                                        <DownloadIcon className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            )}
                         </div>
                     </div>
                 ))}
