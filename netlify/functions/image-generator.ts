@@ -16,10 +16,10 @@ const handler: Handler = async (event) => {
         return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const { CLOUDFLARE_ACCOUNT_ID, API_KEY } = process.env;
+    const { CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_KEY } = process.env;
 
-    if (!CLOUDFLARE_ACCOUNT_ID || !API_KEY) {
-        console.error('Cloudflare credentials are not set (CLOUDFLARE_ACCOUNT_ID or API_KEY).');
+    if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_KEY) {
+        console.error('Cloudflare credentials are not set (CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_KEY).');
         return {
             statusCode: 500,
             headers,
@@ -47,7 +47,7 @@ const handler: Handler = async (event) => {
         const cfResponse = await fetch(url, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${API_KEY}`,
+                'Authorization': `Bearer ${CLOUDFLARE_API_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ prompt }),

@@ -6,6 +6,14 @@ const handler: Handler = async (event) => {
         return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
+    const { GEMINI_API_KEY } = process.env;
+    if (!GEMINI_API_KEY) {
+        return { 
+            statusCode: 500, 
+            body: JSON.stringify({ error: 'خدمة الذكاء الاصطناعي غير مكونة بشكل صحيح.' }) 
+        };
+    }
+
     let parsedBody;
     try {
         parsedBody = JSON.parse(event.body || '{}');
@@ -15,7 +23,7 @@ const handler: Handler = async (event) => {
 
     const { content, task } = parsedBody;
 
-    if (!content && task !== 'complete' || !task) {
+    if ((!content && task !== 'complete') || !task) {
         return { statusCode: 400, body: JSON.stringify({ error: 'Missing content or task' }) };
     }
 
@@ -36,7 +44,7 @@ const handler: Handler = async (event) => {
     }
 
     try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: content,

@@ -1,9 +1,8 @@
-// FIX: Using named imports for React Component parts to resolve potential type resolution issues.
-// FIX: The named import for Component was causing a type resolution issue where `this.props` was not recognized. Switched to using `React.Component` directly.
-import React, { ErrorInfo, ReactNode } from 'react';
+// FIX: Switched to a namespace import for React (`import * as React from 'react'`) to ensure proper type resolution for React.Component and its properties like `props`. This resolves an issue where TypeScript was not correctly recognizing that the ErrorBoundary class extends a React Component, thus causing it to not find the `props` property.
+import * as React from 'react';
 
 interface ErrorBoundaryProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 interface State {
@@ -17,7 +16,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
   }
 
