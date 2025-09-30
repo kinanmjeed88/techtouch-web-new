@@ -22,36 +22,57 @@ const AIChat: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const initializeChat = () => {
+    const initializeChat = (history: Message[]) => {
+        const mappedHistory = history
+            .filter(msg => msg.text && (msg.role === 'user' || msg.role === 'model'))
+            .map(msg => ({
+                role: msg.role,
+                parts: [{ text: msg.text! }]
+            }));
+
+        // The API expects history to be an alternating sequence of user and model roles, starting with user.
+        // If the history starts with a model message (like our welcome message), we remove it for the AI's context.
+        if (mappedHistory.length > 0 && mappedHistory[0].role === 'model') {
+            mappedHistory.shift();
+        }
+        
         const chatSession = ai.chats.create({
             model: 'gemini-2.5-flash',
+            history: mappedHistory,
             config: {
                 systemInstruction: 'أنت مساعد ذكاء اصطناعي مفيد وودود. تحدث باللغة العربية.',
             },
         });
         setChat(chatSession);
-        return chatSession;
     };
 
     useEffect(() => {
+        let loadedMessages: Message[] = [];
         try {
             const storedHistory = localStorage.getItem(CHAT_HISTORY_KEY);
             if (storedHistory) {
-                setMessages(JSON.parse(storedHistory));
-            } else {
-                setMessages([{ 
-                    role: 'model', 
-                    text: 'مرحباً بك في موقع techtouch! كيف يمكنني مساعدتك اليوم؟'
-                }]);
+                loadedMessages = JSON.parse(storedHistory);
             }
         } catch (error) {
             console.error('Failed to load chat history:', error);
-             setMessages([{ 
+        }
+
+        if (loadedMessages.length === 0) {
+            loadedMessages.push({ 
                 role: 'model', 
                 text: 'مرحباً بك في موقع techtouch! كيف يمكنني مساعدتك اليوم؟'
-            }]);
+            });
         }
-        initializeChat();
+        
+        // To ensure the conversation can continue, the history should end with a model's turn.
+        // If the last message is from the user, it means the app was closed before the model could respond.
+        // We remove it to prevent the chat from being in a broken state.
+        if (loadedMessages.length > 0 && loadedMessages[loadedMessages.length - 1].role === 'user') {
+            loadedMessages.pop();
+        }
+
+        setMessages(loadedMessages);
+        initializeChat(loadedMessages);
     }, []);
 
     const scrollToBottom = () => {
@@ -83,7 +104,7 @@ const AIChat: React.FC = () => {
             role: 'model', 
             text: 'مرحباً بك في موقع techtouch! كيف يمكنني مساعدتك اليوم؟'
         }]);
-        initializeChat();
+        initializeChat([]);
     };
 
     const handleSendMessage = async () => {
@@ -158,7 +179,15 @@ const AIChat: React.FC = () => {
                             </span>
                         )}
                         <div className={`max-w-md lg:max-w-2xl p-3 rounded-xl ${msg.role === 'user' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-200'}`} style={msg.role === 'user' ? { backgroundColor: 'var(--color-primary)' } : {}}>
-                            {msg.text && <p className="whitespace-pre-wrap text-sm sm:text-base">{msg.text || '...'}</p>}
+                            {msg.text ? (
+                                <p className="whitespace-pre-wrap text-base sm:text-lg">{msg.text}</p>
+                            ) : msg.role === 'model' ? (
+                                <div className="flex items-center space-x-2 space-x-reverse py-1">
+                                    <span className="block w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0s' }}></span>
+                                    <span className="block w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></span>
+                                    <span className="block w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></span>
+                                </div>
+                            ) : null}
                         </div>
                     </div>
                 ))}
