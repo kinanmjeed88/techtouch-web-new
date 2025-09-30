@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header';
 import AnnouncementBar from './components/AnnouncementBar';
@@ -232,6 +228,7 @@ const App: React.FC = () => {
           siteName={appData.siteName}
           onGoHome={handleGoHome}
           onGoToAIChat={handleGoToAIChat}
+          currentView={currentView}
         />
         <AnnouncementBar 
           content={appData.announcementText} 
