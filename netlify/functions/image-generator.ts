@@ -41,7 +41,8 @@ const handler: Handler = async (event) => {
     }
 
     try {
-        const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0`;
+        // Switched to a different, potentially more available model
+        const url = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/bytedance/stable-diffusion-xl-lightning`;
 
         const cfResponse = await fetch(url, {
             method: 'POST',
@@ -53,9 +54,17 @@ const handler: Handler = async (event) => {
         });
 
         if (!cfResponse.ok) {
+            let errorBody;
             const errorText = await cfResponse.text();
-            console.error('Cloudflare API Error:', errorText);
-            throw new Error('فشل الاتصال بخدمة إنشاء الصور.');
+            try {
+                errorBody = JSON.parse(errorText);
+                console.error('Cloudflare API Error:', JSON.stringify(errorBody, null, 2));
+                const cfErrorMessage = errorBody?.errors?.[0]?.message || 'فشل الاتصال بخدمة إنشاء الصور.';
+                throw new Error(cfErrorMessage);
+            } catch (e) {
+                console.error('Cloudflare API Non-JSON Error:', errorText);
+                throw new Error('فشل الاتصال بخدمة إنشاء الصور. استجابة غير متوقعة من الخادم.');
+            }
         }
 
         const imageBuffer = await cfResponse.arrayBuffer();

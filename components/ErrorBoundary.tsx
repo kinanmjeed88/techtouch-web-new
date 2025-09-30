@@ -1,22 +1,22 @@
-// FIX: Changed React import to default to resolve type issue with 'this.props'.
-import React from 'react';
+// FIX: Using named imports for React Component parts to resolve potential type resolution issues.
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 interface ErrorBoundaryProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 interface State {
   hasError: boolean;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
+class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
   state: State = { hasError: false };
 
   static getDerivedStateFromError(_: Error): State {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
   }
 
