@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import AIChat from './AIChat';
 import AIImageGenerator from './AIImageGenerator'; // Cloudflare
-import GeminiImageGenerator from './GeminiImageGenerator';
-import { ChatBubbleIcon, ImageIcon, SparklesIcon } from './Icons';
+import { ChatBubbleIcon, ImageIcon } from './Icons';
 
 // A map to store component references and their metadata.
-// This is cleaner and less error-prone than multiple if/else statements.
 const toolComponents = {
   chat: {
     Component: AIChat,
@@ -13,16 +11,10 @@ const toolComponents = {
     description: 'تحدث مع Gemini لطرح الأسئلة والحصول على إجابات.',
     icon: <ChatBubbleIcon className="w-8 h-8 text-red-400" />,
   },
-  geminiImage: {
-    Component: GeminiImageGenerator,
-    title: 'مولّد الصور (Gemini)',
-    description: 'أنشئ صوراً عالية الجودة باستخدام نموذج Imagen من جوجل.',
-    icon: <SparklesIcon className="w-8 h-8 text-red-400" />,
-  },
   cfImage: {
     Component: AIImageGenerator,
-    title: 'مولّد الصور (Cloudflare)',
-    description: 'أنشئ صوراً فريدة من وصف نصي باستخدام Cloudflare AI.',
+    title: 'مولّد الصور (Stable Diffusion)',
+    description: 'أنشئ صوراً باستخدام نموذج Stable Diffusion عبر Cloudflare.',
     icon: <ImageIcon className="w-8 h-8 text-red-400" />,
   },
 };
@@ -54,7 +46,7 @@ const AITools: React.FC = () => {
     return (
       <div className="animate-fadeIn">
         <h2 className="text-3xl font-bold text-center mb-8">أدوات الذكاء الاصطناعي</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
           {(Object.keys(toolComponents) as ToolKey[]).map((key) => (
             <ToolCard key={key} toolKey={key} onClick={() => setActiveTool(key)} />
           ))}

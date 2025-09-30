@@ -11,7 +11,7 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({ post, onSelect, categoryTitle, index }) => {
   return (
     <div
-      className="backdrop-blur-sm border border-gray-700 rounded-lg overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer group border-primary-hover shadow-primary-hover card-enter flex flex-col"
+      className="backdrop-blur-sm border border-gray-700 rounded-lg overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-2xl group border-primary-hover shadow-primary-hover card-enter flex flex-col"
       onClick={() => onSelect(post)}
       style={{ 
         backgroundColor: 'var(--color-card-bg)',
@@ -38,7 +38,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onSelect, categoryTitle, inde
           {post.title}
         </h3>
         <p 
-          className="text-sm flex-grow mb-4"
+          className="text-sm flex-grow"
           style={{ color: 'var(--color-card-description)' }}
         >
           {post.description}

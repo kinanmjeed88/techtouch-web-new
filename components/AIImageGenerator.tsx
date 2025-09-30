@@ -52,7 +52,7 @@ const AIImageGenerator: React.FC = () => {
     return (
         <div className="flex flex-col p-4 sm:p-6 rounded-lg shadow-xl animate-fadeIn" style={{ backgroundColor: 'var(--color-header-bg)' }}>
             <h2 className="text-xl sm:text-2xl font-bold text-center mb-4">مولّد الصور بالذكاء الاصطناعي</h2>
-            <p className="text-center text-gray-400 mb-6 text-sm">اكتب وصفاً للصورة التي تريد إنشاءها باللغة الانكليزية ليكون التصميم اكثر دقة</p>
+            <p className="text-center text-gray-400 mb-6 text-sm">أنشئ صوراً باستخدام نموذج Stable Diffusion. للحصول على أفضل النتائج، اكتب الوصف باللغة الإنجليزية.</p>
 
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mb-6">
                 <input
