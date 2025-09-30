@@ -47,7 +47,7 @@ collections:
     label: "التصنيفات"
     folder: "content/categories"
     create: true
-    slug: "{{slug}}"
+    slug: "{{id}}"
     fields:
       - { label: "عنوان التصنيف (مثال: 📱 تطبيقات أندرويد)", name: "title", widget: "string", required: true }
       - { label: "المعرّف ID (مثال: android-apps, يجب أن يكون فريداً باللغة الإنجليزية)", name: "id", widget: "string", required: true }
@@ -56,9 +56,10 @@ collections:
     label: "المنشورات"
     folder: "content/posts"
     create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{fields.slug}}"
     fields:
       - { label: "العنوان", name: "title", widget: "string", required: true }
+      - { label: "الرابط القصير (Slug بالإنجليزية فقط)", name: "slug", widget: "string", required: true }
       - { label: "الوصف", name: "description", widget: "text", required: true }
       - { label: "صورة المنشور", name: "imageUrl", widget: "image", required: false }
       - { label: "التاريخ والوقت", name: "timestamp", widget: "datetime", required: true }
