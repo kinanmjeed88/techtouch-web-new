@@ -1,3 +1,6 @@
+
+
+
 import React from 'react';
 import { SearchIcon, ChatBubbleIcon } from './Icons';
 
@@ -7,10 +10,9 @@ interface HeaderProps {
   siteName: string;
   onGoHome: () => void;
   onGoToAIChat: () => void;
-  currentView: 'home' | 'postDetail' | 'aiChat';
 }
 
-const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onGoHome, onGoToAIChat, currentView }) => {
+const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onGoHome, onGoToAIChat }) => {
   return (
     <header 
       className="flex flex-col items-center justify-center p-4 sm:p-6 rounded-lg shadow-lg"
@@ -49,13 +51,9 @@ const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onGoHome, 
           onClick={onGoToAIChat} 
           title="Gemini AI" 
           aria-label="AI Chat"
-          className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-700 rounded-full text-gray-300 hover:bg-gray-600 hover:text-white transition-all duration-300 transform hover:scale-110"
+          className="p-2 sm:p-3 bg-gray-700 rounded-full text-gray-300 hover:bg-gray-600 hover:text-white transition-all duration-300 transform hover:scale-110"
         >
-          {currentView === 'aiChat' ? (
-            <span className="font-bold text-base sm:text-lg">AI</span>
-          ) : (
-            <ChatBubbleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-          )}
+          <ChatBubbleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
       </div>
     </header>
