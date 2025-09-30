@@ -23,21 +23,6 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
     minute: '2-digit',
   });
 
-  const pageUrl = window.location.href;
-  
-  // Determine the main text for sharing. Use summary if available, otherwise fall back to title.
-  const shareText = summary || `${post.title} - ${siteName}`;
-
-  // Construct the specific URLs for each platform.
-  const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}&quote=${encodeURIComponent(shareText)}`;
-  const twitterShareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(shareText)}`;
-  
-  // WhatsApp combines text and URL in one parameter. A newline is better for readability.
-  const whatsappShareText = `${shareText}\n\n${pageUrl}`;
-  const whatsappShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappShareText)}`;
-  
-  const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(shareText)}`;
-
   const processContent = (content: string): string => {
     return content
       .split('\n')
@@ -50,28 +35,70 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
       .join('<br />');
   };
 
-  const handleSummarize = async () => {
+  const generateSummary = async (): Promise<string> => {
     setIsSummarizing(true);
     setSummaryError(null);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: post.content,
-          config: {
-              systemInstruction: 'أنت خبير في تلخيص النصوص. قم بتلخيص النص التالي بشكل موجز وواضح باللغة العربية، واستخدم نقاطًا للميزات الرئيسية إن أمكن.',
-          }
+        model: 'gemini-2.5-flash',
+        contents: post.content,
+        config: {
+          systemInstruction: 'أنت خبير في تلخيص النصوص. قم بتلخيص النص التالي بشكل موجز وواضح باللغة العربية، واستخدم نقاطًا للميزات الرئيسية إن أمكن.',
+        }
       });
-      
+
       if (!response.text || response.text.trim() === '') {
-          throw new Error("Received an empty summary from the AI.");
+        throw new Error("Received an empty summary from the AI.");
       }
       setSummary(response.text);
+      return response.text;
     } catch (err) {
-        console.error("Error summarizing content:", err);
-        setSummaryError("حدث خطأ أثناء إنشاء الملخص. يرجى المحاولة مرة أخرى.");
+      console.error("Error summarizing content:", err);
+      throw err;
     } finally {
-        setIsSummarizing(false);
+      setIsSummarizing(false);
+    }
+  };
+
+  const handleSummarize = async () => {
+    if (summary) return;
+    try {
+      await generateSummary();
+    } catch (err) {
+      setSummaryError("حدث خطأ أثناء إنشاء الملخص. يرجى المحاولة مرة أخرى.");
+    }
+  };
+
+  const handleShare = async (platform: 'facebook' | 'twitter' | 'whatsapp' | 'telegram') => {
+    try {
+      const summaryToShare = summary || await generateSummary();
+
+      const pageUrl = window.location.href;
+      let shareUrl = '';
+
+      switch (platform) {
+        case 'facebook':
+          shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}&quote=${encodeURIComponent(summaryToShare)}`;
+          break;
+        case 'twitter':
+          shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(summaryToShare)}`;
+          break;
+        case 'whatsapp':
+          const whatsappText = `${summaryToShare}\n\n${pageUrl}`;
+          shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappText)}`;
+          break;
+        case 'telegram':
+          shareUrl = `https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(summaryToShare)}`;
+          break;
+      }
+
+      if (shareUrl) {
+        window.open(shareUrl, '_blank', 'noopener,noreferrer');
+      }
+
+    } catch (err) {
+      setSummaryError("فشل إنشاء الملخص للمشاركة. يرجى المحاولة مرة أخرى.");
     }
   };
 
@@ -108,7 +135,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
                 </button>
               </div>
 
-              {isSummarizing && (
+              {isSummarizing && !summary && ( // Only show skeleton if summarizing for the main button
                 <div className="p-4 rounded-lg bg-gray-800/50 skeleton-pulse">
                   <div className="h-4 bg-gray-700 rounded w-3/4 mb-3"></div>
                   <div className="h-4 bg-gray-700 rounded w-full mb-3"></div>
@@ -159,20 +186,20 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
         )}
 
         <div className="mt-8 pt-6 border-t border-gray-700">
-            <h4 className="text-center text-lg font-semibold text-gray-400 mb-4">مشاركة المنشور</h4>
+            <h4 className="text-center text-lg font-semibold text-gray-400 mb-4">{isSummarizing ? 'جاري إنشاء الملخص للمشاركة...' : 'مشاركة المنشور'}</h4>
             <div className="flex justify-center items-center gap-6">
-                <a href={facebookShareUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover">
+                <button onClick={() => handleShare('facebook')} disabled={isSummarizing} aria-label="Share on Facebook" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover disabled:opacity-50 disabled:cursor-not-allowed">
                     <FacebookIcon className="w-7 h-7" />
-                </a>
-                <a href={twitterShareUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on Twitter" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover">
+                </button>
+                <button onClick={() => handleShare('twitter')} disabled={isSummarizing} aria-label="Share on Twitter" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover disabled:opacity-50 disabled:cursor-not-allowed">
                     <TwitterIcon className="w-7 h-7" />
-                </a>
-                <a href={whatsappShareUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover">
+                </button>
+                <button onClick={() => handleShare('whatsapp')} disabled={isSummarizing} aria-label="Share on WhatsApp" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover disabled:opacity-50 disabled:cursor-not-allowed">
                     <WhatsAppIcon className="w-7 h-7" />
-                </a>
-                <a href={telegramShareUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on Telegram" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover">
+                </button>
+                <button onClick={() => handleShare('telegram')} disabled={isSummarizing} aria-label="Share on Telegram" className="text-gray-400 hover:text-red-400 transition-all duration-300 transform hover:scale-125 text-primary-hover disabled:opacity-50 disabled:cursor-not-allowed">
                     <TelegramIcon className="w-7 h-7" />
-                </a>
+                </button>
             </div>
         </div>
       </article>
