@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Chat } from '@google/genai';
 import { SparklesIcon, SendIcon, TrashIcon } from './Icons';
@@ -176,7 +174,6 @@ const AIChat: React.FC = () => {
                     <div key={index} className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
                         {msg.role === 'model' && (
                             <span className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gray-700">
-                                {/* FIX: Replaced the unsupported 'style' prop with a Tailwind class to set the icon color, resolving a TypeScript error. */}
                                 <SparklesIcon className="w-5 h-5 text-[var(--color-primary-focus)]" />
                             </span>
                         )}

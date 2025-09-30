@@ -1,6 +1,7 @@
 import React, { ErrorInfo, ReactNode } from 'react';
 
-interface Props {
+// FIX: Renamed Props to ErrorBoundaryProps to avoid potential global type conflicts.
+interface ErrorBoundaryProps {
   children: ReactNode;
 }
 
@@ -8,8 +9,8 @@ interface State {
   hasError: boolean;
 }
 
-class ErrorBoundary extends React.Component<Props, State> {
-  // FIX: Replaced the constructor with a state class property. The previous constructor implementation was causing TypeScript errors where 'state' and 'props' were not recognized on the component instance. This modern syntax is cleaner and correctly initializes the component's state.
+// Fix: Extends React.Component directly to resolve module resolution issue.
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
   state: State = { hasError: false };
 
   static getDerivedStateFromError(_: Error): State {

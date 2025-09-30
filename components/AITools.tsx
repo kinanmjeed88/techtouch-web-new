@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import AIChat from './ImageEditor';
 import AIImageGenerator from './AIImageGenerator';
+import GeminiImageGenerator from './GeminiImageGenerator';
 import { ChatBubbleIcon, ImageIcon } from './Icons';
 
 const AITools: React.FC = () => {
-  const [activeTool, setActiveTool] = useState<'selection' | 'chat' | 'image'>('selection');
+  const [activeTool, setActiveTool] = useState<'selection' | 'chat' | 'cfImage' | 'geminiImage'>('selection');
 
   const ToolCard = ({ icon, title, description, onClick }: { icon: React.ReactNode, title: string, description: string, onClick: () => void }) => (
     <div
@@ -24,18 +25,24 @@ const AITools: React.FC = () => {
     return (
       <div className="animate-fadeIn">
         <h2 className="text-3xl font-bold text-center mb-8">أدوات الذكاء الاصطناعي</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <ToolCard 
             icon={<ChatBubbleIcon className="w-8 h-8 text-red-400" />}
-            title="محادثة AI"
+            title="محادثة Gemini"
             description="تحدث مع Gemini لطرح الأسئلة والحصول على إجابات."
             onClick={() => setActiveTool('chat')}
           />
           <ToolCard 
             icon={<ImageIcon className="w-8 h-8 text-red-400" />}
-            title="توليد الصور"
-            description="أنشئ صوراً فريدة من وصف نصي باستخدام Cloudflare AI."
-            onClick={() => setActiveTool('image')}
+            title="توليد الصور (Cloudflare)"
+            description="أنشئ صوراً فريدة من وصف نصي باستخدام الذكاء الاصطناعي من Cloudflare."
+            onClick={() => setActiveTool('cfImage')}
+          />
+          <ToolCard 
+            icon={<ImageIcon className="w-8 h-8 text-red-400" />}
+            title="توليد الصور (Gemini)"
+            description="أنشئ صوراً عالية الجودة باستخدام نموذج Imagen من Google."
+            onClick={() => setActiveTool('geminiImage')}
           />
         </div>
       </div>
@@ -50,7 +57,8 @@ const AITools: React.FC = () => {
         &larr; العودة إلى أدوات AI
       </button>
       {activeTool === 'chat' && <AIChat />}
-      {activeTool === 'image' && <AIImageGenerator />}
+      {activeTool === 'cfImage' && <AIImageGenerator />}
+      {activeTool === 'geminiImage' && <GeminiImageGenerator />}
     </div>
   );
 };
