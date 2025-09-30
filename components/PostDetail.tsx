@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type { Post } from '../types';
 import { FacebookIcon, TwitterIcon, WhatsAppIcon, SparklesIcon, TelegramIcon } from './Icons';
-import { GoogleGenAI } from '@google/genai';
 
 interface PostDetailProps {
   post: Post;
@@ -38,20 +37,26 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
     setIsSummarizing(true);
     setSummaryError(null);
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: post.content,
-        config: {
-          systemInstruction: 'أنت خبير في تلخيص النصوص. قم بتلخيص النص التالي بشكل موجز وواضح باللغة العربية، واستخدم نقاطًا للميزات الرئيسية إن أمكن.',
-        }
+      const response = await fetch('/.netlify/functions/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: post.content }),
       });
 
-      if (!response.text || response.text.trim() === '') {
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch summary from server.");
+      }
+
+      const data = await response.json();
+      const summaryText = data.summary;
+
+      if (!summaryText || summaryText.trim() === '') {
         throw new Error("Received an empty summary from the AI.");
       }
-      setSummary(response.text);
-      return response.text;
+      
+      setSummary(summaryText);
+      return summaryText;
     } catch (err) {
       console.error("Error summarizing content:", err);
       throw err;

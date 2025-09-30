@@ -1,16 +1,117 @@
 import type { Handler } from "@netlify/functions";
 import { GoogleGenAI, GenerateContentConfig } from '@google/genai';
 
+type AITask = 'summarize' | 'reorder' | 'complete';
+
+interface CloudflareAIResponse {
+  result: {
+    response: string;
+  };
+  success: boolean;
+  errors: any[];
+  messages: any[];
+}
+
+const getGeminiPrompt = (task: AITask): string => {
+    switch (task) {
+        case 'summarize':
+            return 'أنت خبير في تلخيص النصوص. قم بتلخيص النص التالي بشكل موجز وواضح باللغة العربية.';
+        case 'reorder':
+            return 'أنت خبير في تنظيم المحتوى. أعد ترتيب النص التالي على شكل نقاط رئيسية (باستخدام علامة - قبل كل نقطة) باللغة العربية. حافظ على جوهر المحتوى الأصلي ولكن اجعله أكثر تنظيماً وسهولة في القراءة.';
+        case 'complete':
+            return 'أنت كاتب محتوى خبير. أكمل النص التالي باللغة العربية بطريقة احترافية وغنية بالمعلومات، مستخدماً مصادر موثوقة. اجعل الإضافة طبيعية ومتكاملة مع النص الأصلي.';
+        default:
+            return 'You are a helpful AI assistant. Respond in Arabic.';
+    }
+}
+
+const getCloudflarePrompt = (task: AITask, content: string): { system: string, user: string } => {
+    switch (task) {
+        case 'summarize':
+            return {
+                system: 'You are an expert text summarizer who responds in Arabic.',
+                user: `Summarize the following text concisely in Arabic: "${content}"`
+            };
+        case 'reorder':
+            return {
+                system: 'You are an expert content organizer who responds in Arabic.',
+                user: `Reorder the following text into main points (using a hyphen '-' before each point) in Arabic. Maintain the core content but make it more organized and readable: "${content}"`
+            };
+        case 'complete':
+            return {
+                system: 'You are an expert content writer who responds in Arabic.',
+                user: `Complete the following text naturally and informatively in Arabic: "${content}"`
+            };
+        default:
+            return {
+                system: 'You are a helpful AI assistant who responds in Arabic.',
+                user: content
+            };
+    }
+}
+
+const runWithGemini = async (content: string, task: AITask, apiKey: string) => {
+    const ai = new GoogleGenAI({ apiKey });
+    const config: GenerateContentConfig = {
+        systemInstruction: getGeminiPrompt(task)
+    };
+    if (task === 'complete') {
+        config.tools = [{ googleSearch: {} }];
+    }
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: content,
+        config: config
+    });
+
+    if (!response.text) {
+        throw new Error("Received an empty response from Gemini AI.");
+    }
+
+    return task === 'complete' ? `${content}\n\n${response.text}` : response.text;
+};
+
+const runWithCloudflare = async (content: string, task: AITask, accountId: string, apiKey: string) => {
+    const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-2-7b-chat-int8`;
+    const prompts = getCloudflarePrompt(task, content);
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            messages: [{ role: 'system', content: prompts.system }, { role: 'user', content: prompts.user }]
+        }),
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Cloudflare AI Error:", errorText);
+        throw new Error("Fallback AI service failed.");
+    }
+
+    const data: CloudflareAIResponse = await response.json();
+    if (!data.success || !data.result?.response) {
+        throw new Error("Fallback AI service returned an invalid response.");
+    }
+
+    return task === 'complete' ? `${content}\n\n${data.result.response}` : data.result.response;
+};
+
 const handler: Handler = async (event) => {
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
     }
 
-    const { API_KEY } = process.env;
+    const { API_KEY, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_KEY } = process.env;
+
     if (!API_KEY) {
-        return { 
-            statusCode: 500, 
-            body: JSON.stringify({ error: 'خدمة الذكاء الاصطناعي غير مكونة بشكل صحيح.' }) 
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: 'خدمة الذكاء الاصطناعي الأساسية غير مكونة.' })
         };
     }
 
@@ -27,43 +128,41 @@ const handler: Handler = async (event) => {
         return { statusCode: 400, body: JSON.stringify({ error: 'Missing content or task' }) };
     }
 
-    let systemInstruction = '';
-    const config: GenerateContentConfig = {};
-    let isCompletion = false;
-
-    if (task === 'summarize') {
-        systemInstruction = 'أنت خبير في تلخيص النصوص. قم بتلخيص النص التالي بشكل موجز وواضح باللغة العربية.';
-    } else if (task === 'reorder') {
-        systemInstruction = 'أنت خبير في تنظيم المحتوى. أعد ترتيب النص التالي على شكل نقاط رئيسية (باستخدام علامة - قبل كل نقطة) باللغة العربية. حافظ على جوهر المحتوى الأصلي ولكن اجعله أكثر تنظيماً وسهولة في القراءة.';
-    } else if (task === 'complete') {
-        isCompletion = true;
-        systemInstruction = 'أنت كاتب محتوى خبير. أكمل النص التالي باللغة العربية بطريقة احترافية وغنية بالمعلومات، مستخدماً مصادر موثوقة. اجعل الإضافة طبيعية ومتكاملة مع النص الأصلي.';
-        config.tools = [{ googleSearch: {} }];
-    } else {
+    const validTasks: AITask[] = ['summarize', 'reorder', 'complete'];
+    if (!validTasks.includes(task)) {
         return { statusCode: 400, body: JSON.stringify({ error: 'Invalid task specified' }) };
     }
 
     try {
-        const ai = new GoogleGenAI({ apiKey: API_KEY });
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: content,
-            config: { ...config, systemInstruction }
-        });
-
-        if (!response.text) {
-          throw new Error("Received an empty response from the AI.");
-        }
-        
-        const result = isCompletion ? `${content}\n\n${response.text}` : response.text;
-
+        const result = await runWithGemini(content, task, API_KEY);
         return {
             statusCode: 200,
             body: JSON.stringify({ result }),
         };
-    } catch (error) {
-        console.error('Error calling Gemini API:', error);
-        return { statusCode: 500, body: JSON.stringify({ error: 'Failed to process request with AI' }) };
+    } catch (geminiError) {
+        console.warn("Gemini AI failed, attempting fallback to Cloudflare AI. Reason:", geminiError);
+
+        if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_KEY) {
+            console.error("Cloudflare credentials not configured for fallback.");
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ error: 'فشل الطلب من الذكاء الاصطناعي الأساسي، والبديل غير مكوّن.' })
+            };
+        }
+
+        try {
+            const result = await runWithCloudflare(content, task, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_KEY);
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ result }),
+            };
+        } catch (cloudflareError) {
+            console.error("Cloudflare AI fallback also failed. Reason:", cloudflareError);
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ error: 'فشل الطلب من خدمتي الذكاء الاصطناعي الأساسية والبديلة.' })
+            };
+        }
     }
 };
 
