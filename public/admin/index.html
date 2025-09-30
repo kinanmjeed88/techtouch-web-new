@@ -66,7 +66,7 @@
 
             try {
               const content = bodyTextarea.value;
-              if (!content.trim()) {
+              if (!content.trim() && task !== 'complete') { // Allow complete to run on empty for generating content
                   alert('لا يوجد محتوى لمعالجته.');
                   return;
               }
@@ -101,9 +101,11 @@
 
       const summarizeButton = createButton('تلخيص بالذكاء الاصطناعي', 'summarize');
       const reorderButton = createButton('ترتيب كنقاط بالذكاء الاصطناعي', 'reorder');
+      const completeButton = createButton('إكمال بالذكاء الاصطناعي', 'complete');
 
       buttonContainer.appendChild(summarizeButton);
       buttonContainer.appendChild(reorderButton);
+      buttonContainer.appendChild(completeButton);
       
       container.insertBefore(buttonContainer, bodyTextarea);
       bodyTextarea.dataset.aiButtonsAdded = 'true';
