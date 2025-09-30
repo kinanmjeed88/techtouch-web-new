@@ -1,12 +1,37 @@
 import React, { useState } from 'react';
 import AIChat from './AIChat';
-import AIImageGenerator from './AIImageGenerator';
-import { ChatBubbleIcon, ImageIcon } from './Icons';
+import AIImageGenerator from './AIImageGenerator'; // Cloudflare
+import GeminiImageGenerator from './GeminiImageGenerator';
+import { ChatBubbleIcon, ImageIcon, SparklesIcon } from './Icons';
 
-const AITools: React.FC = () => {
-  const [activeTool, setActiveTool] = useState<'selection' | 'chat' | 'imageGenerator'>('selection');
+// A map to store component references and their metadata.
+// This is cleaner and less error-prone than multiple if/else statements.
+const toolComponents = {
+  chat: {
+    Component: AIChat,
+    title: 'محادثة Gemini',
+    description: 'تحدث مع Gemini لطرح الأسئلة والحصول على إجابات.',
+    icon: <ChatBubbleIcon className="w-8 h-8 text-red-400" />,
+  },
+  geminiImage: {
+    Component: GeminiImageGenerator,
+    title: 'مولّد الصور (Gemini)',
+    description: 'أنشئ صوراً عالية الجودة باستخدام نموذج Imagen من جوجل.',
+    icon: <SparklesIcon className="w-8 h-8 text-red-400" />,
+  },
+  cfImage: {
+    Component: AIImageGenerator,
+    title: 'مولّد الصور (Cloudflare)',
+    description: 'أنشئ صوراً فريدة من وصف نصي باستخدام Cloudflare AI.',
+    icon: <ImageIcon className="w-8 h-8 text-red-400" />,
+  },
+};
 
-  const ToolCard = ({ icon, title, description, onClick }: { icon: React.ReactNode, title: string, description: string, onClick: () => void }) => (
+type ToolKey = keyof typeof toolComponents;
+
+const ToolCard: React.FC<{ toolKey: ToolKey; onClick: () => void }> = ({ toolKey, onClick }) => {
+  const { title, description, icon } = toolComponents[toolKey];
+  return (
     <div
       onClick={onClick}
       className="p-6 rounded-lg shadow-lg cursor-pointer transition-all duration-300 transform hover:scale-105 border border-gray-700 hover:border-red-500"
@@ -19,38 +44,34 @@ const AITools: React.FC = () => {
       <p className="text-center text-gray-400" style={{ color: 'var(--color-card-description)' }}>{description}</p>
     </div>
   );
+};
+
+
+const AITools: React.FC = () => {
+  const [activeTool, setActiveTool] = useState<ToolKey | 'selection'>('selection');
 
   if (activeTool === 'selection') {
     return (
       <div className="animate-fadeIn">
         <h2 className="text-3xl font-bold text-center mb-8">أدوات الذكاء الاصطناعي</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-          <ToolCard 
-            icon={<ChatBubbleIcon className="w-8 h-8 text-red-400" />}
-            title="محادثة Gemini"
-            description="تحدث مع Gemini لطرح الأسئلة والحصول على إجابات."
-            onClick={() => setActiveTool('chat')}
-          />
-          <ToolCard 
-            icon={<ImageIcon className="w-8 h-8 text-red-400" />}
-            title="مولّد الصور بالذكاء الاصطناعي"
-            description="أنشئ صوراً فريدة من وصف نصي باستخدام Cloudflare AI."
-            onClick={() => setActiveTool('imageGenerator')}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          {(Object.keys(toolComponents) as ToolKey[]).map((key) => (
+            <ToolCard key={key} toolKey={key} onClick={() => setActiveTool(key)} />
+          ))}
         </div>
       </div>
     );
   }
 
   const handleBackToSelection = () => setActiveTool('selection');
+  const { Component } = toolComponents[activeTool];
 
   return (
-    <div>
+    <div className="animate-fadeIn">
       <button onClick={handleBackToSelection} className="mb-6 text-sm sm:text-base hover:text-red-300 transition-colors duration-300 font-semibold" style={{ color: 'var(--color-primary-focus)' }}>
         &larr; العودة إلى أدوات AI
       </button>
-      {activeTool === 'chat' && <AIChat />}
-      {activeTool === 'imageGenerator' && <AIImageGenerator />}
+      <Component />
     </div>
   );
 };
