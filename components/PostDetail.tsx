@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import type { Post } from '../types';
-import { FacebookIcon, TwitterIcon, WhatsAppIcon, SparklesIcon, EyeIcon, TelegramIcon } from './Icons';
+import { FacebookIcon, TwitterIcon, WhatsAppIcon, SparklesIcon, TelegramIcon } from './Icons';
 import { GoogleGenAI } from '@google/genai';
 
 interface PostDetailProps {
@@ -79,9 +79,6 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
         <div className="flex items-center flex-wrap gap-4 text-gray-400 text-sm mb-6">
             <div className="flex items-center gap-x-4">
                 <span>{formattedDate}</span>
-                 <div className="flex items-center gap-1">
-                    <EyeIcon className="w-5 h-5" />
-                </div>
             </div>
         </div>
         

@@ -33,21 +33,11 @@ function generatePosts() {
     }
     
     const id = new Date(data.timestamp).getTime();
-    const creationDate = new Date(data.timestamp);
-    const today = new Date();
-    const diffTime = Math.max(0, today - creationDate); 
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    const titleHash = Array.from(data.title || '').reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) & (acc * 31 + char.charCodeAt(0)), 0);
-    const baseViews = Math.abs(titleHash % 500) + 50; 
-    const dailyViews = Math.abs(titleHash % 20) + 1; 
-    const views = baseViews + (diffDays * dailyViews);
 
     return {
       id,
       ...data,
       content,
-      views,
     };
   }).filter(Boolean);
 
