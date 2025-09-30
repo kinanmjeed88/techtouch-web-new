@@ -1,7 +1,7 @@
 ---
 title: تطبيق تحرير الصور الاحترافي
 description: أفضل تطبيق لتعديل الصور وإضافة فلاتر رائعة بكل سهولة.
-imageUrl: /uploads/picsum1.jpeg
+imageUrl: /uploads/1000133433.jpg
 timestamp: 2024-07-28T10:00:00Z
 link: https://aistudio.google.com/apps/drive/103yNh3Zgatjjc6odW361FlQye5WW57FF?showPreview=true&showAssistant=true
 fileUrl: ""
