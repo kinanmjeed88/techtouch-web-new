@@ -2,7 +2,7 @@
 title: "aistudio google "
 description: |
   هذا الموقع تم بناءه بواسطة aistudio.google
-imageUrl: /uploads/1000133907.jpg
+imageUrl: /uploads/1000133908.jpg
 timestamp: 2025-10-01T07:13:28.003Z
 link: https://kinam2.netlify.app/
 category: Publications
