@@ -7,9 +7,6 @@ timestamp: 2025-10-01T07:13:28.003Z
 link: https://kinam2.netlify.app/
 category: Publications
 ---
-بالتأكيد، إليك إعادة هيكلة للنص لجعل المحتوى أكثر تنظيماً وسهولة في القراءة:
-
----
 
 ## مقدمة: فهم Google AI Studio
 
