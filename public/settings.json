@@ -9,14 +9,14 @@
   },
   "colors": {
     "header": "#1f2937",
-    "card": "rgba(121, 161, 217, 0.5)",
-    "primary": "#0f3be9",
-    "siteName": "#f6f6fe"
+    "card": "rgba(237, 33, 30, 0.5)",
+    "primary": "#ff0300",
+    "siteName": "#fef6f6"
   },
   "socials": {
-    "facebook": "https://facebook.com",
-    "tiktok": "https://tiktok.com",
-    "youtube": "https://youtube.com",
-    "telegram": "https://telegram.org"
+    "facebook": "https://www.facebook.com/share/1CgestKL9z/",
+    "tiktok": "https://vm.tiktok.com/ZTM6JT7Tx/",
+    "youtube": "https://youtube.com/@kinanmajeed?si=slxsR8_FD56GnZ34",
+    "telegram": "https://t.me/techtouch7"
   }
 }
