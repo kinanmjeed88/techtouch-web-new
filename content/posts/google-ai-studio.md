@@ -1,9 +1,9 @@
 ---
-title: "Google AI Studio بناء مزقع ويب "
+title: "Google AI Studio بناء موقع ويب "
 description: Google AI Studio هي منصة تجريبية مجانية من جوجل للمطورين والمبدعين
   لتجربة وبناء تطبيقات باستخدام أحدث نماذج الذكاء الاصطناعي Gemini.
 imageUrl: /uploads/1000133425.jpg
-timestamp: 2025-09-29T13:30:00Z
+timestamp: 2025-09-29T13:30:00.000Z
 link: aistudio.google.com
 fileUrl: ""
 category: ai
