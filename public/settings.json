@@ -5,11 +5,11 @@
     "announcementText": "مرحبا بكم في موقع techtouch الجديد مبني باستخدام الذكاء الاصطناعي فقط وبإستخدام الاوامر ",
     "announcementLink": "https://t.me/techtouch7",
     "announcementLabel": " إعلان 🔔",
-    "announcementBgColor": "#53575e"
+    "announcementBgColor": "#353739"
   },
   "colors": {
     "header": "#1f2937",
-    "card": "rgba(31, 41, 55, 0.5)",
+    "card": "rgba(74, 106, 151, 0.5)",
     "primary": "#ef4444"
   },
   "socials": {
