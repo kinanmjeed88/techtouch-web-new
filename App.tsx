@@ -36,6 +36,7 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -188,36 +189,70 @@ const App: React.FC = () => {
     );
   }
 
-  const CategoryTabs = () => (
-    <div className="mb-8">
-      <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white">التصنيفات</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-        <button
-          onClick={() => handleFilterChange('all')}
-          className={`w-full text-center px-3 py-1 sm:px-4 sm:py-2 rounded-lg transition-all duration-300 text-base sm:text-lg font-medium ${
-            activeCategory === 'all'
-              ? 'bg-red-600 text-white shadow-md btn-primary'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
-          }`}
-        >
-          الكل
-        </button>
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => handleFilterChange(cat.id)}
-            className={`w-full text-center px-3 py-1 sm:px-4 sm:py-2 rounded-lg transition-all duration-300 text-base sm:text-lg font-medium whitespace-nowrap ${
-              activeCategory === cat.id
-                ? 'bg-red-600 text-white shadow-md btn-primary'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
-            }`}
-          >
-            {cat.title}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+  const CategoryTabs = () => {
+    const activeCategoryTitle = useMemo(() => {
+        if (activeCategory === 'all') return 'الكل';
+        return categoryTitleMap[activeCategory] || 'التصنيفات';
+    }, [activeCategory, categoryTitleMap]);
+
+    const handleCategorySelect = (category: Category | 'all') => {
+        handleFilterChange(category);
+        setIsCategoryMenuOpen(false);
+    };
+    
+    const ChevronDownIcon = () => (
+        <svg className={`w-5 h-5 transition-transform duration-300 ${isCategoryMenuOpen ? 'transform rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+    );
+
+    return (
+        <div className="relative mb-8">
+            <button
+                onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-gray-700 text-white rounded-lg transition-colors duration-300 hover:bg-gray-600 focus:outline-none focus:ring-2 ring-primary"
+                aria-haspopup="true"
+                aria-expanded={isCategoryMenuOpen}
+            >
+                <span className="text-lg font-medium">التصنيفات: {activeCategoryTitle}</span>
+                <ChevronDownIcon />
+            </button>
+
+            {isCategoryMenuOpen && (
+                <div className="absolute top-full right-0 mt-2 w-full bg-gray-700 border border-gray-600 rounded-lg shadow-xl z-10 animate-fadeIn">
+                    <ul className="py-1 max-h-60 overflow-y-auto">
+                        <li>
+                            <button
+                                onClick={() => handleCategorySelect('all')}
+                                className={`w-full text-right px-4 py-2 text-lg font-medium transition-colors duration-200 ${
+                                    activeCategory === 'all'
+                                        ? 'text-red-400 bg-gray-800'
+                                        : 'text-gray-300 hover:bg-gray-600 hover:text-white'
+                                }`}
+                            >
+                                الكل
+                            </button>
+                        </li>
+                        {categories.map((cat) => (
+                            <li key={cat.id}>
+                                <button
+                                    onClick={() => handleCategorySelect(cat.id)}
+                                    className={`w-full text-right px-4 py-2 text-lg font-medium transition-colors duration-200 whitespace-nowrap ${
+                                        activeCategory === cat.id
+                                            ? 'text-red-400 bg-gray-800'
+                                            : 'text-gray-300 hover:bg-gray-600 hover:text-white'
+                                    }`}
+                                >
+                                    {cat.title}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+  };
 
   return (
     <div className="bg-gray-900 min-h-screen text-white">
