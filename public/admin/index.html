@@ -88,9 +88,14 @@
               const nativeTextareaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
               nativeTextareaValueSetter.call(bodyTextarea, data.result);
 
-              // Dispatch an input event to notify React of the change
-              const event = new Event('input', { bubbles: true });
-              bodyTextarea.dispatchEvent(event);
+              // Dispatch events to notify React of the change
+              // 'input' is crucial for React to recognize the change.
+              // 'change' is added for robustness, as some libraries might listen for it.
+              const inputEvent = new Event('input', { bubbles: true });
+              const changeEvent = new Event('change', { bubbles: true });
+              bodyTextarea.dispatchEvent(inputEvent);
+              bodyTextarea.dispatchEvent(changeEvent);
+
 
             } catch (error) {
                 console.error('AI Helper Error:', error);

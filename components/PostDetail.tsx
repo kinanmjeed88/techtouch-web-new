@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Post } from '../types';
-import { FacebookIcon, TwitterIcon, WhatsAppIcon, SparklesIcon, TelegramIcon } from './Icons';
+import { FacebookIcon, TwitterIcon, WhatsAppIcon, SparklesIcon, TelegramIcon, InfoIcon } from './Icons';
 
 interface PostDetailProps {
   post: Post;
@@ -12,6 +12,11 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
   const [summary, setSummary] = useState<string | null>(null);
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
+
+  const [details, setDetails] = useState<string | null>(null);
+  const [sources, setSources] = useState<{ uri: string; title: string }[]>([]);
+  const [isFetchingDetails, setIsFetchingDetails] = useState(false);
+  const [detailsError, setDetailsError] = useState<string | null>(null);
 
   const formattedDate = new Date(post.timestamp).toLocaleDateString('ar-EG', {
     year: 'numeric',
@@ -74,6 +79,37 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
     }
   };
 
+  const handleFetchDetails = async () => {
+    if (details) return;
+    setIsFetchingDetails(true);
+    setDetailsError(null);
+    try {
+      const response = await fetch('/.netlify/functions/get-details', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: post.title }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch details from server.");
+      }
+
+      const data = await response.json();
+      if (!data.details || data.details.trim() === '') {
+        throw new Error("Received empty details from the AI.");
+      }
+      setDetails(data.details);
+      setSources(data.sources || []);
+    } catch (err) {
+      console.error("Error fetching details:", err);
+      setDetailsError("حدث خطأ أثناء جلب التفاصيل. يرجى المحاولة مرة أخرى.");
+    } finally {
+      setIsFetchingDetails(false);
+    }
+  };
+
+
   const handleShare = async (platform: 'facebook' | 'twitter' | 'whatsapp' | 'telegram') => {
     try {
       const summaryToShare = summary || await generateSummary();
@@ -126,12 +162,63 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
         <div className="prose prose-invert max-w-none text-gray-300 text-sm sm:text-base leading-relaxed" dangerouslySetInnerHTML={{ __html: processContent(post.content) }} />
 
         <div className="mt-8 pt-6 border-t border-gray-700 space-y-4">
+          {!details ? (
+              <>
+                <div className="text-center">
+                  <button
+                    onClick={handleFetchDetails}
+                    disabled={isFetchingDetails || isSummarizing}
+                    className="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-5 sm:py-3 sm:px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <InfoIcon className="w-5 h-5" />
+                    <span>{isFetchingDetails ? 'يتم جلب المعلومات...' : 'معلومات أكثر بالذكاء الاصطناعي'}</span>
+                  </button>
+                </div>
+                {isFetchingDetails && (
+                  <div className="p-4 rounded-lg bg-gray-800/50 skeleton-pulse">
+                    <div className="h-4 bg-gray-700 rounded w-1/4 mb-4"></div>
+                    <div className="h-4 bg-gray-700 rounded w-full mb-3"></div>
+                    <div className="h-4 bg-gray-700 rounded w-full mb-3"></div>
+                    <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                  </div>
+                )}
+                {detailsError && (
+                  <div className="p-4 rounded-lg bg-red-900/50 text-red-300 text-center">
+                    <p>{detailsError}</p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="p-4 sm:p-5 rounded-lg animate-fadeIn" style={{ backgroundColor: 'rgba(17, 24, 39, 0.8)' }}>
+                <h3 className="flex items-center gap-2 text-lg sm:text-xl font-bold mb-3" style={{ color: 'var(--color-primary-focus)' }}>
+                  <InfoIcon className="w-6 h-6" />
+                  تفاصيل إضافية
+                </h3>
+                <p className="text-gray-300 text-sm sm:text-base whitespace-pre-wrap">{details}</p>
+                {sources.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-gray-700">
+                    <h4 className="font-semibold text-gray-400 mb-2">المصادر:</h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      {sources.map((source, index) => (
+                        <li key={index} className="text-xs text-blue-400 hover:text-blue-300 truncate">
+                          <a href={source.uri} target="_blank" rel="noopener noreferrer">{source.title || source.uri}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+        </div>
+
+
+        <div className="mt-8 pt-6 border-t border-gray-700 space-y-4">
           {!summary ? (
             <>
               <div className="text-center">
                 <button
                   onClick={handleSummarize}
-                  disabled={isSummarizing}
+                  disabled={isSummarizing || isFetchingDetails}
                   className="inline-flex items-center gap-2 text-white font-bold py-2 px-5 sm:py-3 sm:px-6 rounded-lg transition-all duration-300 transform hover:scale-105 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <SparklesIcon className="w-5 h-5" />
@@ -139,7 +226,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
                 </button>
               </div>
 
-              {isSummarizing && !summary && ( // Only show skeleton if summarizing for the main button
+              {isSummarizing && (
                 <div className="p-4 rounded-lg bg-gray-800/50 skeleton-pulse">
                   <div className="h-4 bg-gray-700 rounded w-3/4 mb-3"></div>
                   <div className="h-4 bg-gray-700 rounded w-full mb-3"></div>
