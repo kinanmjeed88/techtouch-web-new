@@ -87,7 +87,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName }) => {
       const response = await fetch('/.netlify/functions/get-details', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: post.title }),
+        body: JSON.stringify({ topic: post.content }),
       });
 
       if (!response.ok) {
