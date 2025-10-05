@@ -93,19 +93,64 @@ const App: React.FC = () => {
     };
     fetchData();
   }, []);
+  
+  useEffect(() => {
+    const handleLocationChange = () => {
+      if (!appData) return;
+
+      const path = window.location.pathname;
+      const postMatch = path.match(/^\/post\/(\d+)\/(.*)$/);
+
+      if (postMatch) {
+        const postId = parseInt(postMatch[1], 10);
+        const post = appData.posts.find(p => p.id === postId);
+        if (post) {
+          if (selectedPost?.id !== post.id) {
+            setSelectedPost(post);
+          }
+          setCurrentView('postDetail');
+        } else {
+          // Post not found, go home
+          window.history.replaceState({}, '', '/');
+          setSelectedPost(null);
+          setCurrentView('home');
+        }
+      } else if (path === '/ai-tools') {
+        setSelectedPost(null);
+        setCurrentView('aiTools');
+      } else {
+        setSelectedPost(null);
+        setCurrentView('home');
+      }
+    };
+
+    // Initial load check
+    if(appData) {
+      handleLocationChange();
+    }
+
+    window.addEventListener('popstate', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+    };
+  }, [appData]);
 
   const handleSelectPost = (post: Post) => {
+    const newPath = `/post/${post.id}/${post.slug}`;
+    window.history.pushState({ postId: post.id }, post.title, newPath);
     setSelectedPost(post);
     setCurrentView('postDetail');
     window.scrollTo(0, 0);
   };
 
   const handleGoHome = () => {
+    window.history.pushState({}, '', '/');
     setSelectedPost(null);
     setCurrentView('home');
   };
   
   const handleGoToAITools = () => {
+    window.history.pushState({}, '', '/ai-tools');
     setSelectedPost(null);
     setCurrentView('aiTools');
     window.scrollTo(0, 0);
@@ -179,7 +224,7 @@ const App: React.FC = () => {
     return <div className="flex items-center justify-center min-h-screen text-red-500 text-2xl">حدث خطأ: {error}</div>;
   }
 
-  if (!appData) {
+  if (loading && !appData) {
     return (
        <div className="bg-gray-900 min-h-screen text-white">
         <div className="container mx-auto px-4 py-8">
@@ -188,6 +233,8 @@ const App: React.FC = () => {
       </div>
     );
   }
+  
+  if (!appData) return null; // Return null while waiting for routing effect after data load
 
   const CategoryTabs = () => {
     const activeCategoryTitle = useMemo(() => {

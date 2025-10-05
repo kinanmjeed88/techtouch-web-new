@@ -8,7 +8,7 @@ interface State {
   hasError: boolean;
 }
 
-// Fix: The 'ErrorBoundary' class must extend 'React.Component' to be a valid class component. This provides access to 'this.props' and component lifecycle methods, resolving the error.
+// FIX: To resolve the error "Property 'props' does not exist on type 'ErrorBoundary'", the class must extend `React.Component`.
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
   state: State = { hasError: false };
 

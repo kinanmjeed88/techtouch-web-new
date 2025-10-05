@@ -3,6 +3,7 @@ export type Category = 'general' | 'android-apps' | 'movie-apps' | 'sports-apps'
 
 export interface Post {
   id: number;
+  slug: string;
   title: string;
   description: string;
   content: string;

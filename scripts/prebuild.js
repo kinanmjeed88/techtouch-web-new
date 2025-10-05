@@ -9,6 +9,16 @@ const CATEGORIES_DIR = path.join(CWD, 'content/categories');
 const POSTS_OUTPUT_PATH = path.join(CWD, 'public/posts.json');
 const CATEGORIES_OUTPUT_PATH = path.join(CWD, 'public/categories.json');
 
+function slugify(text) {
+  return text.toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    // Remove characters that are not alphanumeric, dash, or Arabic letters/numbers
+    .replace(/[^\w\u0600-\u06FF\u0660-\u0669\-]/g, '') 
+    .replace(/\-\-+/g, '-') // Replace multiple dashes with a single dash
+}
+
 function generatePosts() {
   if (!fs.existsSync(POSTS_DIR)) {
     console.log("Creating 'content/posts' directory...");
@@ -33,9 +43,11 @@ function generatePosts() {
     }
     
     const id = new Date(data.timestamp).getTime();
+    const slug = slugify(data.title);
 
     return {
       id,
+      slug,
       ...data,
       content,
     };
