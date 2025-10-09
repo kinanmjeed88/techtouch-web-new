@@ -42,14 +42,21 @@ const Backup: React.FC = () => {
     };
 
     return (
-        <div className="p-4 sm:p-6 rounded-lg shadow-xl animate-fadeIn" style={{ backgroundColor: 'var(--color-header-bg)' }}>
-            <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6">النسخ الاحتياطي والاستعادة</h2>
-            
+        <div className="space-y-8">
             <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
                 <h3 className="text-xl font-semibold mb-4 text-red-400" style={{ color: 'var(--color-primary-focus)' }}>أخذ نسخة احتياطية</h3>
-                <p className="text-gray-300 mb-6">
-                    انقر على الزر أدناه لإنشاء نسخة احتياطية كاملة من جميع منشوراتك، تصنيفاتك، وإعدادات الموقع. سيتم تنزيل ملف ZIP يحتوي على كل المحتوى.
+                <p className="text-gray-300 mb-4">
+                    انقر على الزر أدناه لإنشاء نسخة احتياطية كاملة من محتوى موقعك. سيتم تنزيل ملف ZIP يحتوي على كل المحتوى المصدر.
                 </p>
+                <div className="bg-gray-900/50 p-4 rounded-md mb-6 border border-gray-600">
+                    <p className="text-gray-300 font-semibold mb-3">النسخة الاحتياطية تشمل:</p>
+                    <ul className="list-disc list-inside text-gray-400 space-y-2 text-sm">
+                        <li>جميع المنشورات (ملفات Markdown)</li>
+                        <li>جميع التصنيفات (ملفات Markdown)</li>
+                        <li>إعدادات الموقع العامة (ملف settings.json)</li>
+                        <li>بيانات الملف الشخصي (ملف profile.json)</li>
+                    </ul>
+                </div>
                 <div className="text-center">
                     <button
                         onClick={handleBackup}
@@ -67,17 +74,16 @@ const Backup: React.FC = () => {
                 {error && <p className="mt-4 p-3 rounded-lg bg-red-900/50 text-red-300 text-center w-full">{error}</p>}
             </div>
 
-            <div className="mt-8 bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+            <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
                 <h3 className="text-xl font-semibold mb-4 text-red-400" style={{ color: 'var(--color-primary-focus)' }}>استعادة نسخة احتياطية</h3>
                 <p className="text-gray-300 mb-4">
                     للاستعادة من نسخة احتياطية، يجب رفع الملفات يدوياً إلى مستودع المشروع على Git. هذه عملية حساسة وتتطلب معرفة تقنية.
                 </p>
                 <ol className="list-decimal list-inside space-y-3 text-gray-400">
                     <li>قم بفك ضغط ملف الـ ZIP الذي قمت بتنزيله.</li>
-                    <li>ستجد مجلد `content` وملفات `settings.json` و `profile.json`.</li>
-                    <li>قم برفع محتويات مجلد `content` إلى نفس المجلد في مشروعك، مع استبدال الملفات الموجودة.</li>
-                    <li>قم برفع ملفات `settings.json` و `profile.json` إلى مجلد `public` في مشروعك، مع استبدال الملفات الموجودة.</li>
-                    <li>بعد رفع الملفات، يجب إعادة نشر الموقع لتظهر التغييرات.</li>
+                    <li>ستجد مجلدين: `content` و `public`.</li>
+                    <li>قم بنسخ هذين المجلدين إلى المجلد الرئيسي لمشروعك، ووافق على استبدال الملفات والمجلدات الموجودة.</li>
+                    <li>بعد رفع الملفات، يجب إعادة نشر الموقع (redeploy) لتظهر التغييرات.</li>
                 </ol>
                 <p className="mt-4 text-sm text-yellow-400 bg-yellow-900/30 p-3 rounded-lg">
                     <strong>تحذير:</strong> استعادة نسخة قديمة سيؤدي إلى حذف أي تغييرات قمت بها بعد تاريخ أخذ تلك النسخة. إذا لم تكن متأكداً، يرجى التواصل مع مطور الموقع للمساعدة.
