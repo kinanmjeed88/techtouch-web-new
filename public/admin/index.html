@@ -254,12 +254,12 @@
     const addBackupRestoreUI = () => {
       // Check if the UI has already been added
       if (document.getElementById('backup-restore-container')) {
-        return;
+        return true;
       }
 
       const sidebar = document.querySelector('div[class*="Sidebar-container-"]');
       if (!sidebar) {
-        return; // CMS UI not ready yet
+        return false;
       }
 
       const container = document.createElement('div');
@@ -303,12 +303,12 @@
       });
 
       restoreInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
+        const file = (event.target).files[0];
         if (!file) return;
 
         const isConfirmed = confirm('هل أنت متأكد؟ سيتم حذف جميع المنشورات والتصنيفات والإعدادات الحالية واستبدالها بالبيانات من ملف النسخة الاحتياطية. لا يمكن التراجع عن هذا الإجراء.');
         if (!isConfirmed) {
-          restoreInput.value = ''; // Reset file input
+          (event.target).value = ''; // Reset file input
           return;
         }
 
@@ -347,7 +347,7 @@
             restoreButton.disabled = false;
             restoreButton.style.opacity = '1';
             restoreButton.style.cursor = 'pointer';
-            restoreInput.value = ''; // Reset file input
+            (event.target).value = ''; // Reset file input
           }
         };
         reader.onerror = () => {
@@ -356,22 +356,27 @@
           restoreButton.disabled = false;
           restoreButton.style.opacity = '1';
           restoreButton.style.cursor = 'pointer';
-          restoreInput.value = '';
+          (event.target).value = '';
         };
         reader.readAsText(file);
       });
+
+      return true; // UI added
     };
 
-    const backupObserver = new MutationObserver(() => {
-      if (document.querySelector('div[class*="Sidebar-container-"]')) {
-        addBackupRestoreUI();
-      }
-    });
+    const initBackupUI = () => {
+        let attempts = 0;
+        const maxAttempts = 20; // Try for 10 seconds
+        const interval = setInterval(() => {
+            attempts++;
+            const success = addBackupRestoreUI();
+            if (success || attempts >= maxAttempts) {
+                clearInterval(interval);
+            }
+        }, 500);
+    };
 
-    backupObserver.observe(document.body, { childList: true, subtree: true });
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(addBackupRestoreUI, 2000);
-    });
+    document.addEventListener('DOMContentLoaded', initBackupUI);
   </script>
 </body>
 </html>

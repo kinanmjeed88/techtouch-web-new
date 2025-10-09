@@ -1,7 +1,8 @@
-import React, { ErrorInfo, ReactNode } from 'react';
+// Fix: Switched to a namespace import for React to ensure consistent type resolution, which resolves the error on `this.props`.
+import * as React from 'react';
 
 interface ErrorBoundaryProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 interface State {
@@ -17,7 +18,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
   }
 
