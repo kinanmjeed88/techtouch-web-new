@@ -1,5 +1,5 @@
-// Fix: Switched to a namespace import for React to ensure consistent type resolution, which resolves the error on `this.props`.
-import * as React from 'react';
+// Fix: The previous namespace import for React was inconsistent with the project and likely caused type resolution issues. Switched to the standard default import.
+import React from 'react';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -9,8 +9,6 @@ interface State {
   hasError: boolean;
 }
 
-// Fix: To resolve the error "Property 'props' does not exist on type 'ErrorBoundary'", the class must extend `React.Component`.
-// Using `React.Component` directly instead of destructuring `Component` from the import ensures correct type resolution.
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
   state: State = { hasError: false };
 

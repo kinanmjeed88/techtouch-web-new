@@ -252,16 +252,18 @@
   <!-- Backup and Restore Script -->
   <script>
     const addBackupRestoreUI = () => {
-      // Check if the UI has already been added
+      // 1. Check if the UI is already present. If so, our job is done for this check.
       if (document.getElementById('backup-restore-container')) {
-        return true;
+        return;
       }
 
+      // 2. Find the sidebar. If not found, exit and wait for the next check.
       const sidebar = document.querySelector('div[class*="Sidebar-container-"]');
       if (!sidebar) {
-        return false;
+        return;
       }
 
+      // 3. If sidebar exists but our UI doesn't, create and inject it.
       const container = document.createElement('div');
       container.id = 'backup-restore-container';
       container.style.padding = '10px 15px';
@@ -303,12 +305,12 @@
       });
 
       restoreInput.addEventListener('change', (event) => {
-        const file = (event.target).files[0];
+        const file = (event.target as HTMLInputElement).files[0];
         if (!file) return;
 
         const isConfirmed = confirm('هل أنت متأكد؟ سيتم حذف جميع المنشورات والتصنيفات والإعدادات الحالية واستبدالها بالبيانات من ملف النسخة الاحتياطية. لا يمكن التراجع عن هذا الإجراء.');
         if (!isConfirmed) {
-          (event.target).value = ''; // Reset file input
+          (event.target as HTMLInputElement).value = ''; // Reset file input
           return;
         }
 
@@ -321,7 +323,7 @@
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
-            const backupData = JSON.parse(e.target.result);
+            const backupData = JSON.parse(e.target.result as string);
             
             const response = await fetch('/.netlify/functions/restore', {
               method: 'POST',
@@ -347,7 +349,7 @@
             restoreButton.disabled = false;
             restoreButton.style.opacity = '1';
             restoreButton.style.cursor = 'pointer';
-            (event.target).value = ''; // Reset file input
+            (event.target as HTMLInputElement).value = ''; // Reset file input
           }
         };
         reader.onerror = () => {
@@ -356,24 +358,16 @@
           restoreButton.disabled = false;
           restoreButton.style.opacity = '1';
           restoreButton.style.cursor = 'pointer';
-          (event.target).value = '';
+          (event.target as HTMLInputElement).value = '';
         };
         reader.readAsText(file);
       });
-
-      return true; // UI added
     };
 
     const initBackupUI = () => {
-        let attempts = 0;
-        const maxAttempts = 20; // Try for 10 seconds
-        const interval = setInterval(() => {
-            attempts++;
-            const success = addBackupRestoreUI();
-            if (success || attempts >= maxAttempts) {
-                clearInterval(interval);
-            }
-        }, 500);
+        // Use a persistent interval to ensure the UI is always present,
+        // even if the CMS framework re-renders the sidebar.
+        setInterval(addBackupRestoreUI, 1000);
     };
 
     document.addEventListener('DOMContentLoaded', initBackupUI);
