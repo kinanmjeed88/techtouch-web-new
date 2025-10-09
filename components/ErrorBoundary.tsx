@@ -1,8 +1,7 @@
-// Fix: The previous namespace import for React was inconsistent with the project and likely caused type resolution issues. Switched to the standard default import.
-import React from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 
 interface ErrorBoundaryProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 interface State {
@@ -10,13 +9,19 @@ interface State {
 }
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
-  state: State = { hasError: false };
+  // Fix: Refactored to use a constructor for state initialization. This is a more traditional approach
+  // and can help avoid issues with some build tool configurations that may not fully support
+  // class field syntax, which could be the cause of the reported error.
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   static getDerivedStateFromError(_: Error): State {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
   }
 
