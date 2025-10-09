@@ -9,54 +9,52 @@
   <style>
     /*
       CSS Rules for making Netlify CMS responsive on small screens.
-      Using !important to ensure these styles override the default CMS styles.
+      Version 3: More aggressive and specific selectors using !important to 
+      ensure these styles override the default CMS styles.
     */
     @media (max-width: 767px) {
       
-      /* Force the main layout to a vertical stack */
+      /* Main layout: force vertical stacking */
       div[class*="App-main-"] {
         flex-direction: column !important;
         height: auto !important;
       }
 
-      /* Move sidebar to the top, make it a scrollable dropdown area */
+      /* Sidebar: move to top, make scrollable */
       div[class*="Sidebar-container-"] {
         position: relative !important;
         width: 100% !important;
         height: auto !important;
-        max-height: 45vh !important; /* Limit height */
+        max-height: 40vh !important; /* Limit height to 40% of viewport */
         overflow-y: auto !important;
         border-right: none !important;
-        border-bottom: 2px solid #e0e0e0 !important;
-        margin-bottom: 10px;
+        border-bottom: 2px solid #ccc !important;
+        margin-bottom: 15px !important;
       }
 
-      /* Ensure main content area takes full width */
+      /* Content Area: ensure it takes full width */
       div[class*="Collection-root-"], 
       div[class*="Editor-root-"] {
         padding: 10px !important;
         width: 100% !important;
       }
       
-      div[class*="Collection-main-"], 
-      div[class*="Editor-main-"] {
+      /* Collection Table: Allow horizontal scrolling */
+      div[class*="Collection-main-"] {
         width: 100% !important;
-        /* Allow collection table to scroll horizontally */
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
       }
-
-      /* Force a minimum width on the table to ensure it becomes scrollable */
       table[class*="Table-table-"] {
-        min-width: 600px !important; 
+        min-width: 600px !important; /* Force a min-width to trigger scroll */
       }
 
-      /* Stack the top bar (Search, New Post button) vertically */
+      /* Top Bar: stack controls vertically */
       div[class*="Collection-top-root-"] {
         flex-direction: column !important;
         align-items: stretch !important;
-        gap: 10px !important;
-        padding: 10px 5px !important;
+        gap: 12px !important;
+        padding: 10px !important;
       }
 
       div[class*="Search-input-"] {
@@ -68,18 +66,18 @@
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
-        gap: 8px !important;
+        gap: 10px !important;
       }
       
-      /* Make all buttons in the top bar full-width */
+      /* Top Bar Buttons: make them full-width */
       div[class*="Collection-top-actions-"] button,
       a[class*="Button-button-"] {
         width: 100% !important;
         justify-content: center !important;
-        margin-bottom: 5px;
+        margin: 0 !important;
       }
       
-      /* Stack editor field labels on top of their inputs */
+      /* Editor Fields: Stack label on top of input */
       div[class*="Field-root-"] {
         flex-direction: column !important;
         align-items: stretch !important;
@@ -88,31 +86,38 @@
       div[class*="Field-root-"] > label[class*="Label-label-"] {
         margin-bottom: 8px !important;
         text-align: right !important; /* RTL support for labels */
-      }
-
-      /* Ensure inputs are full-width */
-      textarea, input[type="text"], input[type="string"] {
         width: 100% !important;
       }
 
-      /* Stack the AI helper buttons vertically */
+      /* Ensure form elements are full-width */
+      textarea, input[type="text"], input[type="string"], .public-DraftEditor-content {
+        width: 100% !important;
+      }
+
+      /* AI Helper Buttons in CMS: Stack vertically */
       #ai-helper-buttons {
         flex-direction: column !important;
         gap: 8px !important;
-        margin-top: 10px;
+        margin-top: 10px !important;
       }
       #ai-helper-buttons button {
         width: 100% !important;
         justify-content: center !important;
       }
 
-      /* Improve spacing for editor controls */
+      /* Editor Toolbar: Improve spacing on mobile */
       div[class*="Editor-toolbar-"] {
           padding: 5px !important;
+          flex-wrap: wrap !important; /* Allow toolbar buttons to wrap */
       }
       
       div[class*="EditorControl-root-"] {
           padding: 6px !important;
+      }
+
+      /* Hide login page illustration on small screens */
+      div[class*="Login-logo-"] {
+        display: none !important;
       }
     }
   </style>
