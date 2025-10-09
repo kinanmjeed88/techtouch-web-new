@@ -7,78 +7,112 @@
   <!-- Netlify Identity Widget -->
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   <style>
-    @media (max-width: 768px) {
-      /* General layout */
-      [class^="App-main-"] {
-        flex-direction: column;
-        height: auto;
+    /*
+      CSS Rules for making Netlify CMS responsive on small screens.
+      Using !important to ensure these styles override the default CMS styles.
+    */
+    @media (max-width: 767px) {
+      
+      /* Force the main layout to a vertical stack */
+      div[class*="App-main-"] {
+        flex-direction: column !important;
+        height: auto !important;
       }
 
-      /* Sidebar */
-      [class^="Sidebar-container-"] {
-        position: static;
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #e0e0e0;
-        height: auto;
-        max-height: 40vh;
-        overflow-y: auto;
+      /* Move sidebar to the top, make it a scrollable dropdown area */
+      div[class*="Sidebar-container-"] {
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: 45vh !important; /* Limit height */
+        overflow-y: auto !important;
+        border-right: none !important;
+        border-bottom: 2px solid #e0e0e0 !important;
+        margin-bottom: 10px;
       }
 
-      /* Main content area */
-      [class^="Collection-root-"], [class^="Editor-root-"] {
-        padding: 10px;
+      /* Ensure main content area takes full width */
+      div[class*="Collection-root-"], 
+      div[class*="Editor-root-"] {
+        padding: 10px !important;
+        width: 100% !important;
       }
       
-      [class^="Collection-main-"], [class^="Editor-main-"] {
-          width: 100%;
+      div[class*="Collection-main-"], 
+      div[class*="Editor-main-"] {
+        width: 100% !important;
+        /* Allow collection table to scroll horizontally */
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
       }
 
-      /* Collection Top Bar */
-      [class^="Collection-top-root-"] {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 10px;
+      /* Force a minimum width on the table to ensure it becomes scrollable */
+      table[class*="Table-table-"] {
+        min-width: 600px !important; 
       }
 
-      [class^="Search-input-"] {
-          width: 100%;
-          margin: 0 0 10px 0;
+      /* Stack the top bar (Search, New Post button) vertically */
+      div[class*="Collection-top-root-"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 10px 5px !important;
       }
 
-      [class^="Collection-top-actions-"] {
-          display: flex;
-          flex-direction: column;
+      div[class*="Search-input-"] {
+        width: 100% !important;
+        margin: 0 !important;
       }
 
-      [class^="Collection-top-actions-"] > [class^="Button-button-"] {
-          width: 100%;
-          margin-bottom: 5px;
-          justify-content: center;
-      }
-
-      /* Editor Fields */
-      [class^="Field-root-"] {
-        flex-direction: column;
-        align-items: stretch;
+      div[class*="Collection-top-actions-"] {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
       }
       
-      [class^="Field-root-"] > [class^="Label-label-"] {
-          margin-bottom: 5px;
+      /* Make all buttons in the top bar full-width */
+      div[class*="Collection-top-actions-"] button,
+      a[class*="Button-button-"] {
+        width: 100% !important;
+        justify-content: center !important;
+        margin-bottom: 5px;
+      }
+      
+      /* Stack editor field labels on top of their inputs */
+      div[class*="Field-root-"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+      
+      div[class*="Field-root-"] > label[class*="Label-label-"] {
+        margin-bottom: 8px !important;
+        text-align: right !important; /* RTL support for labels */
       }
 
-      /* Ensure textareas and inputs are full-width */
+      /* Ensure inputs are full-width */
       textarea, input[type="text"], input[type="string"] {
-          width: 100% !important;
+        width: 100% !important;
       }
 
-      /* AI Helper Buttons */
+      /* Stack the AI helper buttons vertically */
       #ai-helper-buttons {
-          flex-direction: column;
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-top: 10px;
       }
       #ai-helper-buttons button {
-          width: 100%;
-          justify-content: center;
+        width: 100% !important;
+        justify-content: center !important;
+      }
+
+      /* Improve spacing for editor controls */
+      div[class*="Editor-toolbar-"] {
+          padding: 5px !important;
+      }
+      
+      div[class*="EditorControl-root-"] {
+          padding: 6px !important;
       }
     }
   </style>
