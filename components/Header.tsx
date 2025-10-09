@@ -1,5 +1,5 @@
 import React from 'react';
-import { SearchIcon } from './Icons';
+import { SearchIcon, GearIcon } from './Icons';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -7,10 +7,11 @@ interface HeaderProps {
   siteName: string;
   onLogoClick: () => void;
   onGoToAITools: () => void;
+  onGoToAdminPanel: () => void;
   currentView: 'home' | 'postDetail' | 'aiTools' | 'adminPanel';
 }
 
-const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onLogoClick, onGoToAITools, currentView }) => {
+const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onLogoClick, onGoToAITools, onGoToAdminPanel, currentView }) => {
   return (
     <header 
       className="flex flex-col items-center justify-center p-4 sm:p-6 rounded-lg shadow-lg"
@@ -56,6 +57,18 @@ const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onLogoClic
           }`}
         >
           <span className="font-bold text-base sm:text-lg">AI</span>
+        </button>
+        <button
+            onClick={onGoToAdminPanel}
+            title="لوحة التحكم"
+            aria-label="Admin Panel"
+            className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-all duration-300 transform hover:scale-110 ${
+                currentView === 'adminPanel' 
+                ? 'btn-primary text-white shadow-lg' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+            }`}
+        >
+            <GearIcon className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
       </div>
     </header>
