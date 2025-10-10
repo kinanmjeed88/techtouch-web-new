@@ -1,4 +1,3 @@
-// Fix: The previous namespace import for React was inconsistent with the project and likely caused type resolution issues. Switched to the standard default import.
 import React from 'react';
 
 interface ErrorBoundaryProps {
@@ -9,6 +8,7 @@ interface State {
   hasError: boolean;
 }
 
+// Fix: Changed to extend React.Component to ensure props are correctly inherited.
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
   state: State = { hasError: false };
 
