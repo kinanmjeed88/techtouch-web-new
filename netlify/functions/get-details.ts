@@ -55,7 +55,15 @@ const handler: Handler = async (event) => {
         const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
         const sources = groundingChunks
             .map((chunk: any) => chunk.web)
-            .filter((web: any) => web && web.uri);
+            .filter((web: any) => web && web.uri)
+            // De-duplicate sources based on URI
+            .reduce((acc: any[], current: any) => {
+                if (!acc.find(item => item.uri === current.uri)) {
+                    acc.push(current);
+                }
+                return acc;
+            }, [])
+            .slice(0, 5); // Limit to a maximum of 5 sources
             
         return {
             statusCode: 200,

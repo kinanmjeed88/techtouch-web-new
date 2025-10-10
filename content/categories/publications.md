@@ -1,4 +1,0 @@
----
-title: منشورات 💡
-id: Publications
----

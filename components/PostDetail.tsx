@@ -44,6 +44,8 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName, allPost
 
   const processContent = (content: string): string => {
     return content
+      // Process markdown links first to make them clickable
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300">$1</a>')
       .split('\n')
       .map(line => {
         if (line.trim().startsWith('##')) {

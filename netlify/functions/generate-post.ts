@@ -106,6 +106,7 @@ const handler: Handler = async (event) => {
                 }
                 return acc;
             }, [])
+            .slice(0, 5) // Limit to 5 sources
             .map((web: any) => `- [${web.title || web.uri}](${web.uri})`);
 
         if (sources.length > 0) {
