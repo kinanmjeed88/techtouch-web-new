@@ -251,6 +251,7 @@
                     element.dispatchEvent(event);
                 };
 
+                updateReactInput(descriptionTextarea, data.description || '');
                 updateReactInput(bodyTextarea, data.content || '');
                 updateReactInput(youtubeUrlInput, data.youtubeUrl || '');
                 if (data.categoryTitle) {
@@ -496,19 +497,27 @@
       });
     };
     
-    const observer = new MutationObserver(() => {
-        addAiButtons();
-        handlePendingPost();
-        addAdvancedToolsUI();
-    });
+    const runCmsInjections = () => {
+      addAiButtons();
+      handlePendingPost();
+      addAdvancedToolsUI();
+    };
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    const observer = new MutationObserver(runCmsInjections);
 
+    // Run once on initial load with a delay as a fallback
     document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            addAiButtons();
-            addAdvancedToolsUI();
-        }, 1500);
+      setTimeout(runCmsInjections, 2000);
+    });
+    
+    // Observe for SPA navigations and dynamic content loading.
+    // The nc-root element is the root of the Netlify CMS app, which is a better target than document.body.
+    window.addEventListener('load', () => {
+        const targetNode = document.getElementById('nc-root') || document.body;
+        observer.observe(targetNode, {
+            childList: true,
+            subtree: true,
+        });
     });
   </script>
 </body>

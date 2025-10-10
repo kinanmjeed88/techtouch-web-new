@@ -72,9 +72,9 @@ const handler: Handler = async (event) => {
                 systemInstruction: `You are an expert content creator for a tech blog. Your task is to generate a complete blog post based on a given topic.
 - The content must be concise, accurate, useful, and written in Arabic.
 - It must be well-structured using Markdown for formatting (e.g., '##' for headings, '-' for bullet points).
-- You must use Google Search to find up-to-date information and a relevant YouTube video link.
+- You must use Google Search to find up-to-date information and a relevant, working, publicly accessible YouTube video link. Do not link to private or unavailable videos.
 - You must also select the most appropriate category ID for this post from the following list: [${categoryListForPrompt}].
-- IMPORTANT: Your entire response MUST be a single, valid JSON object and nothing else. Do not wrap it in markdown code fences or add any explanations. The JSON object must have three keys: "content" (string), "youtubeUrl" (string), and "category" (string).`,
+- IMPORTANT: Your entire response MUST be a single, valid JSON object and nothing else. Do not wrap it in markdown code fences or add any explanations. The JSON object must have four keys: "description" (a concise and engaging summary of the post, 2-3 sentences), "content" (string, the full post body), "youtubeUrl" (string), and "category" (string).`,
                 tools: [{ googleSearch: {} }],
             }
         });

@@ -196,7 +196,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName, allPost
           </div>
         )}
         
-        <div className="prose prose-invert max-w-none text-gray-300 text-sm sm:text-base leading-relaxed" dangerouslySetInnerHTML={{ __html: processContent(post.content) }} />
+        <div className="prose prose-invert max-w-none text-gray-300 text-sm sm:text-base leading-relaxed break-words" dangerouslySetInnerHTML={{ __html: processContent(post.content) }} />
 
         <div className="mt-8 pt-6 border-t border-gray-700 space-y-4">
           {!details ? (
@@ -231,7 +231,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName, allPost
                   <InfoIcon className="w-6 h-6" />
                   تفاصيل إضافية
                 </h3>
-                <p className="text-gray-300 text-sm sm:text-base whitespace-pre-wrap">{details}</p>
+                <p className="text-gray-300 text-sm sm:text-base whitespace-pre-wrap break-words">{details}</p>
                 {sources.length > 0 && (
                   <div className="mt-4 pt-3 border-t border-gray-700">
                     <h4 className="font-semibold text-gray-400 mb-2">المصادر:</h4>
@@ -283,7 +283,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, onBack, siteName, allPost
                     <SparklesIcon className="w-6 h-6" />
                     ملخص بالذكاء الاصطناعي
                 </h3>
-                <p className="text-gray-300 text-sm sm:text-base whitespace-pre-wrap">{summary}</p>
+                <p className="text-gray-300 text-sm sm:text-base whitespace-pre-wrap break-words">{summary}</p>
             </div>
           )}
         </div>
