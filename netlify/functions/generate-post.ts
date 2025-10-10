@@ -1,5 +1,5 @@
 import type { Handler } from "@netlify/functions";
-import { GoogleGenAI, Type } from '@google/genai';
+import { GoogleGenAI } from '@google/genai';
 import fs from 'fs/promises';
 import path from 'path';
 // Fix: Import 'process' to provide type definitions for process.cwd()
@@ -78,8 +78,20 @@ const handler: Handler = async (event) => {
                 tools: [{ googleSearch: {} }],
             }
         });
+        
+        if (!response.text) {
+            throw new Error("AI returned an empty response.");
+        }
 
-        const jsonString = response.text.trim();
+        let jsonString = response.text.trim();
+        const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+
+        if (!jsonMatch || !jsonMatch[0]) {
+            console.error("Failed to extract JSON from AI response:", response.text);
+            throw new Error("AI did not return a valid JSON object structure.");
+        }
+
+        jsonString = jsonMatch[0];
         const parsedResult = JSON.parse(jsonString);
         
         // Append sources from grounding metadata
@@ -114,10 +126,16 @@ const handler: Handler = async (event) => {
     } catch (error) {
         console.error('Error generating post with AI:', error);
         const errorMessage = error instanceof Error ? error.message : 'فشل إنشاء المحتوى.';
+        let finalError = `فشل إنشاء المحتوى بالذكاء الاصطناعي: ${errorMessage}`;
+
+        if (error instanceof SyntaxError) {
+            finalError = `فشل تحليل استجابة الذكاء الاصطناعي. تأكد من أن النموذج يعيد JSON صالحًا.`;
+        }
+    
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: `فشل إنشاء المحتوى بالذكاء الاصطناعي: ${errorMessage}` }),
+            body: JSON.stringify({ error: finalError }),
         };
     }
 };

@@ -435,8 +435,8 @@
       const container = document.createElement('div');
       container.id = 'advanced-tools-container';
       container.style.padding = '10px 15px';
-      container.style.marginBottom = '10px';
-      container.style.borderBottom = '1px solid #4a5568';
+      container.style.marginTop = '10px';
+      container.style.borderTop = '1px solid #4a5568';
       
       const buttonStyle = `display: block; width: 100%; text-align: center; color: white; padding: 10px 12px; border-radius: 5px; cursor: pointer; text-decoration: none; margin-bottom: 10px; font-size: 14px; border: none; font-weight: 500;`;
       
@@ -478,8 +478,8 @@
         </div>
       `;
 
-      // Insert at the top of the sidebar for visibility on all devices
-      sidebar.insertBefore(container, sidebar.firstChild);
+      // Insert at the bottom of the sidebar to appear after the collections.
+      sidebar.appendChild(container);
 
 
       // --- Hot Topics Logic ---
