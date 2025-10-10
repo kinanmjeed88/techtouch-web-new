@@ -410,20 +410,6 @@
       setTimeout(() => clearInterval(interval), 5000);
     };
 
-    const observer = new MutationObserver(() => {
-        addAiButtons();
-        handlePendingPost();
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(addAiButtons, 1500);
-    });
-  </script>
-  
-  <!-- Hot Topics Script -->
-  <script>
     const addAdvancedToolsUI = () => {
       if (document.getElementById('advanced-tools-container')) {
         return;
@@ -460,26 +446,6 @@
       const hotTopicsBtn = document.getElementById('fetch-hot-topics-btn');
       const hotTopicsUiContainer = document.getElementById('hot-topics-ui-container');
 
-      hotTopicsBtn.addEventListener('click', () => {
-        hotTopicsUiContainer.innerHTML = '';
-        const topics = {
-          "أخبار تقنية": "Latest Technology News",
-          "تطبيقات رياضية": "Trending Sports Apps",
-          "تطبيقات أفلام": "New and Popular Movie Streaming Apps",
-          "ذكاء اصطناعي": "Breakthroughs in Artificial Intelligence"
-        };
-        
-        Object.entries(topics).forEach(([label, topic]) => {
-          const btn = document.createElement('button');
-          btn.textContent = label;
-          btn.style.cssText = `${buttonStyle} background-color: #4a5568;`;
-          btn.onmouseover = () => btn.style.backgroundColor = '#6b7280';
-          btn.onmouseout = () => btn.style.backgroundColor = '#4a5568';
-          btn.onclick = () => fetchAndDisplayTopics(topic, hotTopicsUiContainer);
-          hotTopicsUiContainer.appendChild(btn);
-        });
-      });
-
       const fetchAndDisplayTopics = async (topic, uiContainer) => {
         uiContainer.innerHTML = `<p style="color: #9ca3af; text-align: center;">... جاري البحث عن أفضل 20 موضوعًا</p>`;
         try {
@@ -508,13 +474,42 @@
           uiContainer.innerHTML = `<p style="color: #f87171;">خطأ: ${e.message}</p>`;
         }
       };
+
+      hotTopicsBtn.addEventListener('click', () => {
+        hotTopicsUiContainer.innerHTML = '';
+        const topics = {
+          "أخبار تقنية": "Latest Technology News",
+          "تطبيقات رياضية": "Trending Sports Apps",
+          "تطبيقات أفلام": "New and Popular Movie Streaming Apps",
+          "ذكاء اصطناعي": "Breakthroughs in Artificial Intelligence"
+        };
+        
+        Object.entries(topics).forEach(([label, topic]) => {
+          const btn = document.createElement('button');
+          btn.textContent = label;
+          btn.style.cssText = `${buttonStyle} background-color: #4a5568;`;
+          btn.onmouseover = () => btn.style.backgroundColor = '#6b7280';
+          btn.onmouseout = () => btn.style.backgroundColor = '#4a5568';
+          btn.onclick = () => fetchAndDisplayTopics(topic, hotTopicsUiContainer);
+          hotTopicsUiContainer.appendChild(btn);
+        });
+      });
     };
     
-    const initAdvancedToolsUI = () => {
-        setInterval(addAdvancedToolsUI, 1000);
-    };
+    const observer = new MutationObserver(() => {
+        addAiButtons();
+        handlePendingPost();
+        addAdvancedToolsUI();
+    });
 
-    document.addEventListener('DOMContentLoaded', initAdvancedToolsUI);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            addAiButtons();
+            addAdvancedToolsUI();
+        }, 1500);
+    });
   </script>
 </body>
 </html>
