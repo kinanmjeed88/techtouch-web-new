@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء عناوين رائجة</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f5f7; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #1a1a1a; text-align: center; }
+        .topic-selector { margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .topic-button, .generate-button {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            color: #333;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+        .topic-button:hover {
+            background-color: #e0e0e0;
+            border-color: #999;
+        }
+        .topic-button.active { background-color: #007acc; color: white; border-color: #007acc; }
+        .generate-button { background-color: #28a745; color: white; border: none; width: 100%; margin-top: 10px; font-weight: bold; }
+        .generate-button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #results { margin-top: 20px; }
+        .result-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 8px; background-color: #fafafa; }
+        .result-item p { margin: 0; flex-grow: 1; padding-left: 10px; }
+        .copy-button { padding: 5px 10px; background-color: #007acc; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; }
+        .copy-button:hover { background-color: #005f99; }
+        .loader { text-align: center; padding: 20px; }
+        .loader div { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #error { color: red; text-align: center; margin-top: 10px; padding: 10px; background-color: #ffebeb; border: 1px solid red; border-radius: 5px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>إنشاء عناوين رائجة بالذكاء الاصطناعي</h1>
+        <p style="text-align: center; color: #666;">اختر تصنيفاً لإنشاء قائمة بالمواضيع الشائعة والمقترحة لمنشوراتك.</p>
+        <div id="topic-selector" class="topic-selector">
+             <!-- Buttons will be loaded here -->
+             <div class="loader"><div></div></div>
+        </div>
+        
+        <button id="generate-button" class="generate-button" disabled>اختر تصنيفاً أولاً</button>
+        
+        <div id="error"></div>
+        <div id="loader" class="loader" style="display: none;"><div></div></div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const topicSelector = document.getElementById('topic-selector');
+        const generateButton = document.getElementById('generate-button');
+        const resultsContainer = document.getElementById('results');
+        const loader = document.getElementById('loader');
+        const errorContainer = document.getElementById('error');
+        
+        let selectedTopic = null;
+        let categories = [];
+
+        async function fetchCategories() {
+            try {
+                // We use a cache-busting query parameter to ensure we get the latest file
+                const response = await fetch('/categories.json?v=' + new Date().getTime());
+                if (!response.ok) throw new Error('Failed to load categories');
+                const data = await response.json();
+                categories = data.categories || [];
+                renderCategoryButtons();
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                topicSelector.innerHTML = '<p style="color: red;">فشل تحميل التصنيفات. يرجى المحاولة مرة أخرى.</p>';
+                generateButton.disabled = true;
+            }
+        }
+        
+        function renderCategoryButtons() {
+            topicSelector.innerHTML = ''; // Clear loader
+            if (categories.length === 0) {
+                 topicSelector.innerHTML = '<p>لم يتم العثور على تصنيفات. يرجى إضافة تصنيفات من لوحة التحكم.</p>';
+                 return;
+            }
+            categories.forEach(cat => {
+                const button = document.createElement('button');
+                button.className = 'topic-button';
+                button.textContent = cat.title;
+                button.dataset.topic = cat.title; // Using title as the topic for the AI
+                button.onclick = () => selectTopic(button, cat.title);
+                topicSelector.appendChild(button);
+            });
+        }
+
+        function selectTopic(button, topic) {
+            document.querySelectorAll('.topic-button').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            selectedTopic = topic;
+            generateButton.disabled = false;
+            generateButton.textContent = `إنشاء عناوين حول "${topic}"`;
+        }
+
+        generateButton.addEventListener('click', async () => {
+            if (!selectedTopic) return;
+
+            loader.style.display = 'block';
+            resultsContainer.innerHTML = '';
+            errorContainer.style.display = 'none';
+            generateButton.disabled = true;
+            generateButton.textContent = '...جاري الإنشاء';
+
+            try {
+                const response = await fetch('/.netlify/functions/get-hot-topics', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ topic: selectedTopic })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'فشل الطلب من الخادم.');
+                }
+                
+                const titles = await response.json();
+                displayResults(titles);
+
+            } catch (err) {
+                errorContainer.textContent = err.message;
+                errorContainer.style.display = 'block';
+            } finally {
+                loader.style.display = 'none';
+                generateButton.disabled = false;
+                if(selectedTopic) {
+                    generateButton.textContent = `إنشاء عناوين حول "${selectedTopic}"`;
+                }
+            }
+        });
+
+        function displayResults(titles) {
+            if (!titles || titles.length === 0) {
+                resultsContainer.innerHTML = '<p>لم يتم العثور على عناوين مقترحة. حاول مرة أخرى أو اختر تصنيفاً آخر.</p>';
+                return;
+            }
+            titles.forEach(title => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+
+                const p = document.createElement('p');
+                p.textContent = title;
+
+                const copyButton = document.createElement('button');
+                copyButton.className = 'copy-button';
+                copyButton.textContent = 'نسخ';
+                copyButton.onclick = () => {
+                    navigator.clipboard.writeText(title).then(() => {
+                        copyButton.textContent = 'تم النسخ!';
+                        setTimeout(() => { copyButton.textContent = 'نسخ'; }, 2000);
+                    });
+                };
+                
+                item.appendChild(p);
+                item.appendChild(copyButton);
+                resultsContainer.appendChild(item);
+            });
+        }
+        
+        // Initial load
+        fetchCategories();
+    </script>
+</body>
+</html>

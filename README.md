@@ -1,81 +1,119 @@
-# techtouch0 Web Application
+# تطبيق الويب techtouch0
 
-This is a modern, dynamic web application designed to feature posts, applications, and games. It is managed via a headless CMS (Netlify CMS) and integrates several AI-powered features using the Google Gemini and Cloudflare AI APIs.
+هذا تطبيق ويب حديث وديناميكي مصمم لعرض المنشورات والتطبيقات والألعاب. تتم إدارته عبر نظام إدارة محتوى بدون رأس (Netlify CMS) ويدمج العديد من الميزات المدعومة بالذكاء الاصطناعي باستخدام واجهات برمجة تطبيقات Google Gemini و Cloudflare AI.
 
-## ✨ Features
+## ✨ الميزات الرئيسية
 
-- **Dynamic Content Management**: Easily manage posts, categories, and site settings through the Netlify CMS admin panel at `/admin/`.
-- **AI-Powered Content Assistance**:
-  - **Post Summarization**: Generate concise summaries for any post using Gemini AI.
-  - **AI Chat**: Engage in a conversation with a Gemini-powered chatbot with local storage history persistence.
-  - **AI Image Generation**: Create images from text prompts using two powerful models: Google's Imagen (via Gemini) and Cloudflare's Stable Diffusion model.
-  - **CMS AI Helper**: Within the CMS, users can summarize, reorder content into bullet points, or complete text using Gemini.
-- **Interactive User Experience**:
-  - **Post Reactions**: Users can react to posts with "like," "dislike," or "love." Counts are stored on the server.
-  - **Search & Filtering**: Quickly find posts with a real-time search bar and category filters.
-- **Progressive Web App (PWA)**:
-  - **Installable**: The application can be installed on mobile and desktop devices.
-  - **Offline Functionality**: A service worker provides offline access to previously visited pages and assets.
-- **Customizable & Themed**: Site identity (logo, name), colors, and social media links can be updated directly from the CMS.
-- **Responsive Design**: A mobile-first design that looks great on all screen sizes.
+- **إدارة محتوى ديناميكية**: إدارة المنشورات والتصنيفات وإعدادات الموقع بسهولة من خلال لوحة تحكم Netlify CMS على المسار `/admin/`.
+- **مساعدة في المحتوى مدعومة بالذكاء الاصطناعي**:
+  - **تلخيص المنشورات**: إنشاء ملخصات موجزة لأي منشور باستخدام Gemini AI.
+  - **محادثة AI**: الدخول في محادثة مع روبوت مدعوم بـ Gemini مع حفظ سجل المحادثة في التخزين المحلي.
+  - **إنشاء الصور بالذكاء الاصطناعي**: إنشاء صور من أوامر نصية باستخدام نموذجين قويين: Imagen من جوجل (عبر Gemini) و Stable Diffusion من Cloudflare.
+  - **مساعد AI في نظام إدارة المحتوى**: داخل نظام إدارة المحتوى، يمكن للمستخدمين تلخيص المحتوى، أو إعادة ترتيبه كنقاط، أو إكماله باستخدام Gemini.
+- **تجربة مستخدم تفاعلية**:
+  - **تفاعلات المنشورات**: يمكن للمستخدمين التفاعل مع المنشورات بـ "أعجبني"، "لم يعجبني"، أو "أحببته". يتم تخزين الأعداد على الخادم.
+  - **بحث وتصنيف**: العثور بسرعة على المنشورات باستخدام شريط بحث مباشر وفلاتر حسب التصنيف.
+- **تطبيق ويب تقدمي (PWA)**:
+  - **قابل للتثبيت**: يمكن تثبيت التطبيق على الأجهزة المحمولة وأجهزة سطح المكتب.
+  - **وظائف دون اتصال بالإنترنت**: يوفر Service Worker إمكانية الوصول إلى الصفحات والأصول التي تمت زيارتها مسبقًا دون اتصال بالإنترنت.
+- **قابل للتخصيص ومصمم**: يمكن تحديث هوية الموقع (الشعار، الاسم)، والألوان، وروابط وسائل التواصل الاجتماعي مباشرة من نظام إدارة المحتوى.
+- **تصميم متجاوب**: تصميم يعطي الأولوية للجوال ويبدو رائعًا على جميع أحجام الشاشات.
 
-## 🛠️ Tech Stack
+## 🛠️ التقنيات المستخدمة
 
-- **Frontend**: React, TypeScript, Vite, Tailwind CSS
-- **AI Services**: Google Gemini API (`@google/genai`), Cloudflare AI
-- **CMS**: Netlify CMS
-- **Deployment & Backend**: Netlify, Netlify Functions, Netlify Git Gateway
+- **الواجهة الأمامية (Frontend)**: React, TypeScript, Vite, Tailwind CSS
+- **خدمات الذكاء الاصطناعي**: Google Gemini API (`@google/genai`), Cloudflare AI
+- **نظام إدارة المحتوى (CMS)**: Netlify CMS
+- **النشر والخلفية (Backend)**: Netlify, Netlify Functions, Netlify Git Gateway
 
-## 📂 Project Structure
+---
 
-```
-/
-├── content/                # Markdown content for posts and categories
-│   ├── posts/
-│   └── categories/
-├── netlify/
-│   └── functions/          # Serverless functions for AI and reactions
-│       ├── ai-helper.ts
-│       ├── gemini-image-generator.ts
-│       ├── image-generator.ts
-│       └── reactions.ts
-├── public/                 # Static assets and build outputs
-│   ├── admin/              # Netlify CMS configuration and custom scripts
-│   ├── uploads/            # Media files uploaded via CMS
-│   ├── categories.json     # Generated categories data (prebuild)
-│   └── posts.json          # Generated posts data (prebuild)
-├── scripts/
-│   └── prebuild.js         # Script to convert Markdown to JSON
-├── src/                    # Main application source code
-│   ├── components/         # React components
-│   └── types/              # TypeScript type definitions
-├── .env.example            # Environment variable template
-├── package.json
-└── vite.config.ts
-```
+## 📂 هيكلة المشروع المفصلة
 
-## 🚀 Getting Started
+لفهم كيفية عمل التطبيق وأين يمكن إجراء التعديلات المستقبلية، تم تقسيم الهيكلة إلى جزأين رئيسيين: واجهة المستخدم ولوحة التحكم.
 
-### Prerequisites
+### 1. هيكلة واجهة المستخدم (User-Facing App)
 
-- Node.js (v18 or higher)
+هذا هو الجزء الذي يتفاعل معه الزوار.
+
+- **`src/`**: يحتوي على الكود المصدري الرئيسي لتطبيق React.
+  - **`App.tsx`**: المكون الرئيسي الذي يدير حالة التطبيق العامة والتنقل بين الصفحات (الرئيسية، تفاصيل المنشور، أدوات AI).
+  - **`index.tsx`**: نقطة الدخول للتطبيق، حيث يتم ربط React بالـ DOM.
+  - **`components/`**: يحتوي على جميع مكونات React القابلة لإعادة الاستخدام.
+    - `PostCard.tsx`: بطاقة عرض المنشور في الصفحة الرئيسية.
+    - `PostDetail.tsx`: صفحة عرض التفاصيل الكاملة للمنشور، بما في ذلك أزرار التلخيص والمشاركة.
+    - `Header.tsx`: رأس الصفحة الذي يحتوي على الشعار، الاسم، وشريط البحث.
+    - `AITools.tsx`: المكون الذي يعمل كبوابة لأدوات الذكاء الاصطناعي المختلفة (الدردشة، مولد الصور).
+    - `AIChat.tsx`, `GeminiImageGenerator.tsx`: مكونات أدوات الذكاء الاصطناعي الفعلية.
+  - **`types.ts`**: تعريفات TypeScript للبيانات مثل `Post` و `Category`.
+
+- **`public/`**: يحتوي على الأصول الثابتة.
+  - **`index.html`**: الهيكل الأساسي لصفحة الويب الذي يستضيف تطبيق React.
+  - **`posts.json`, `categories.json`**: ملفات JSON التي يتم إنشاؤها تلقائيًا من المحتوى. التطبيق يقرأ هذه الملفات لعرض المنشورات.
+  - **`uploads/`**: المجلد الذي يتم فيه تخزين الصور والملفات التي يتم رفعها عبر لوحة التحكم.
+
+- **`netlify/functions/`**: وظائف Serverless التي تعمل كخلفية للتطبيق.
+  - **`summarize.ts`**: تعالج طلبات تلخيص محتوى المنشور.
+  - **`get-details.ts`**: تستخدم Google Search لجلب معلومات إضافية حول موضوع المنشور.
+  - **`gemini-image-generator.ts`**: تتعامل مع طلبات إنشاء الصور باستخدام نموذج Imagen من Gemini.
+  - **`image-generator.ts`**: (بديل) تتعامل مع طلبات إنشاء الصور باستخدام نموذج Stable Diffusion من Cloudflare.
+  - **`reactions.ts`**: تدير عدادات التفاعلات (الإعجاب، عدم الإعجاب، الحب) للمنشورات.
+
+- **`scripts/prebuild.js`**:
+  - سكريبت Node.js يعمل تلقائيًا قبل بناء المشروع. يقوم بقراءة ملفات الماركدوان من مجلد `content/` وتحويلها إلى `posts.json` و `categories.json` في مجلد `public/`. هذا يسمح للتطبيق بالعمل كـ "مولد مواقع ثابتة" (Static Site Generator) مع محتوى ديناميكي.
+
+### 2. هيكلة لوحة التحكم (Admin Panel)
+
+هذا هو الجزء الذي يستخدمه مدير الموقع لإدارة المحتوى.
+
+- **`public/admin/`**: يحتوي على كل ما يتعلق بـ Netlify CMS.
+  - **`index.html`**:
+    - يقوم بتحميل سكريبت Netlify CMS الأساسي.
+    - يحتوي على CSS مخصص لجعل لوحة التحكم متجاوبة على الشاشات الصغيرة.
+    - الأهم من ذلك، يحتوي على سكريبت JavaScript (`<script>`) مضمن يقوم بالآتي:
+      - يراقب تحميل محرر المنشورات.
+      - عند فتح محرر منشور، يقوم بإضافة أزرار "مساعد AI" الأربعة بشكل ديناميكي ("إنشاء منشور كامل"، "تلخيص"، "ترتيب كنقاط"، "إكمال") فوق حقل المحتوى.
+      - يربط هذه الأزرار بوظيفة `ai-helper` Serverless Function لإجراء الطلبات.
+  - **`config.yml`**:
+    - ملف الإعدادات الرئيسي لـ Netlify CMS.
+    - يحدد "المجموعات" (Collections) التي يمكن إدارتها:
+      - `settings`: لإدارة الإعدادات العامة للموقع مثل الشعار والألوان.
+      - `profile`: لإدارة بيانات الملف الشخصي.
+      - `categories`: لإضافة أو تعديل تصنيفات المنشورات.
+      - `posts`: لإنشاء وتحرير المنشورات، ويحدد جميع الحقول المتاحة لكل منشور (العنوان، الوصف، الصورة، المحتوى، إلخ).
+
+- **`netlify/functions/ai-helper.ts`**:
+  - هذه الوظيفة مصممة خصيصًا ليتم استدعاؤها من أزرار "مساعد AI" داخل لوحة التحكم.
+  - تستقبل "مهمة" (مثل `summarize`, `reorder`, `complete`) والمحتوى الحالي، وتقوم بإرجاع النص المعدل.
+
+- **`netlify/functions/generate-post.ts`**:
+  - هذه الوظيفة مخصصة لزر "إنشاء منشور كامل بالذكاء الاصطناعي".
+  - تأخذ العنوان والوصف كرأس خيط وتستخدم بحث جوجل لتوليد منشور كامل، بما في ذلك المحتوى، الوصف، رابط يوتيوب، واقتراح للتصنيف.
+
+---
+
+## 🚀 بدء الاستخدام
+
+### المتطلبات الأساسية
+
+- Node.js (الإصدار 18 أو أحدث)
 - npm, yarn, or pnpm
 
-### Setup
+### الإعداد
 
-1.  **Clone the repository:**
+1.  **استنساخ المستودع:**
     ```bash
     git clone <repository-url>
     cd <repository-directory>
     ```
 
-2.  **Install dependencies:**
+2.  **تثبيت الاعتماديات:**
     ```bash
     npm install
     ```
 
-3.  **Set up environment variables:**
-    Create a `.env` file in the root directory by copying `.env.example`. Fill in your API keys:
+3.  **إعداد متغيرات البيئة:**
+    أنشئ ملف `.env` في الدليل الجذري عن طريق نسخ `.env.example`. املأ مفاتيح API الخاصة بك:
     ```env
     # Google Gemini API Key
     API_KEY="your_google_api_key"
@@ -85,39 +123,26 @@ This is a modern, dynamic web application designed to feature posts, application
     CLOUDFLARE_API_KEY="your_cloudflare_api_key"
     ```
 
-### Running the Application
+### تشغيل التطبيق
 
-- **Development Server:**
+- **خادم التطوير:**
   ```bash
   npm run dev
   ```
-  This will start the Vite development server, typically at `http://localhost:5173`.
+  سيؤدي هذا إلى بدء خادم تطوير Vite، عادةً على `http://localhost:5173`.
 
-- **Production Build:**
+- **بناء للإنتاج:**
   ```bash
   npm run build
   ```
-  This command first runs the `prebuild.js` script to generate JSON from your Markdown files and then builds the application for production in the `dist/` folder.
+  يقوم هذا الأمر أولاً بتشغيل سكريبت `prebuild.js` لإنشاء ملفات JSON من ملفات Markdown الخاصة بك ثم يبني التطبيق للإنتاج في مجلد `dist/`.
 
-## 📝 Headless CMS (Netlify CMS)
+## 📝 نظام إدارة المحتوى بدون رأس (Netlify CMS)
 
-The content of this website is managed through Netlify CMS.
+تتم إدارة محتوى هذا الموقع عبر Netlify CMS.
 
-- **Access**: The admin panel is available at `https://your-deployed-site.com/admin/`. For local development, you can use the Netlify CLI with a local Git gateway.
-- **Collections**:
-  - **إعدادات الموقع (Site Settings)**: Configure global settings like the site logo, name, colors, announcement bar, and social media links.
-  - **التصنيفات (Categories)**: Manage the categories used to filter posts.
-  - **المنشورات (Posts)**: Create and edit posts. The post editor includes AI Helper buttons to automatically **summarize**, **reorder as points**, or **complete** the content in the main body field.
-
-## ☁️ Serverless Functions
-
-The application uses Netlify Functions to securely handle requests to AI services and manage dynamic data like reactions.
-
--   `ai-helper.ts`: Powers the AI buttons within the Netlify CMS post editor.
--   `gemini-image-generator.ts`: A backend proxy to generate images using the Gemini Imagen model.
--   `image-generator.ts`: A backend proxy to generate images using Cloudflare's AI model.
--   `reactions.ts`: A simple in-memory store to handle post reaction counts.
-
-## ⚙️ Prebuild Process
-
-Before the Vite build process starts, the `scripts/prebuild.js` script runs. It reads all Markdown files from the `content/posts` and `content/categories` directories, parses the frontmatter and content, and compiles them into `public/posts.json` and `public/categories.json`. The main React application then fetches these JSON files to display the content. This approach allows for static content generation while maintaining the ease of Markdown-based content management.
+- **الوصول**: لوحة التحكم متاحة على `https://your-deployed-site.com/admin/`. للتطوير المحلي، يمكنك استخدام Netlify CLI مع بوابة Git محلية.
+- **المجموعات (Collections)**:
+  - **إعدادات الموقع (Site Settings)**: تكوين الإعدادات العامة مثل شعار الموقع، الاسم، الألوان، شريط الإعلانات، وروابط وسائل التواصل الاجتماعي.
+  - **التصنيفات (Categories)**: إدارة التصنيفات المستخدمة لتصفية المنشورات.
+  - **المنشورات (Posts)**: إنشاء وتحرير المنشورات. يتضمن محرر المنشورات أزرار "مساعد AI" لـ **تلخيص**، **إعادة ترتيب كنقاط**، أو **إكمال** المحتوى تلقائيًا في حقل المحتوى الرئيسي.

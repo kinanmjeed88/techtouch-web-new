@@ -330,11 +330,55 @@
         container.insertBefore(buttonContainer, bodyTextarea);
     };
     
+    const addHotTopicsLink = () => {
+        if (document.getElementById('hot-topics-link-wrapper')) return;
+
+        const sidebarList = document.querySelector('ul[class*="Sidebar-list-"]');
+        if (sidebarList) {
+            const listItem = document.createElement('li');
+            listItem.id = 'hot-topics-link-wrapper';
+            
+            const link = document.createElement('a');
+            link.href = '/admin/hot-topics.html';
+            link.textContent = '💡 إنشاء عناوين رائجة';
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            
+            link.style.cssText = `
+                padding: 12px 20px;
+                display: block;
+                border-left: 3px solid transparent;
+                color: rgb(122, 133, 153);
+                font-weight: 600;
+                text-decoration: none;
+                transition: all 150ms ease-in-out 0s;
+            `;
+            
+            link.addEventListener('mouseover', () => {
+                link.style.color = 'rgb(39, 44, 53)';
+                link.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+            });
+            link.addEventListener('mouseout', () => {
+                link.style.color = 'rgb(122, 133, 153)';
+                link.style.backgroundColor = 'transparent';
+            });
+
+            listItem.appendChild(link);
+            sidebarList.appendChild(listItem);
+        }
+    };
+
     // --- Observer Setup ---
-    const observer = new MutationObserver(addAllAiButtons);
+    const observer = new MutationObserver(() => {
+        addAllAiButtons();
+        addHotTopicsLink();
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(addAllAiButtons, 2000);
+      setTimeout(() => {
+        addAllAiButtons();
+        addHotTopicsLink();
+      }, 2000);
     });
     
     window.addEventListener('load', () => {

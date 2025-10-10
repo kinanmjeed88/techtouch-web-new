@@ -1,8 +1,8 @@
 {
   "identity": {
-    "logoUrl": "/uploads/1000135705.png",
-    "siteName": "techtouch تقنية",
-    "announcementText": "مرحبا بكم في صفحة techtouch0 الجديدة مبنية بواسطة الذكاء الاصطناعي فقط",
+    "logoUrl": "/uploads/picsum-avatar.jpeg",
+    "siteName": "techtouch0",
+    "announcementText": "محتوى إعلاني تجريبي يظهر هنا لجذب الانتباه.",
     "announcementLink": "https://google.com",
     "announcementLabel": "إعلان",
     "announcementBgColor": "#1f2937"
@@ -16,6 +16,6 @@
     "facebook": "https://facebook.com",
     "tiktok": "https://tiktok.com",
     "youtube": "https://youtube.com",
-    "telegram": "https://t.me/techtouch7"
+    "telegram": "https://telegram.org"
   }
 }
