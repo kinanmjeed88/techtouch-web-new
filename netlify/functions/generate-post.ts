@@ -74,27 +74,8 @@ const handler: Handler = async (event) => {
 - It must be well-structured using Markdown for formatting (e.g., '##' for headings, '-' for bullet points).
 - You must use Google Search to find up-to-date information and a relevant YouTube video link.
 - You must also select the most appropriate category ID for this post from the following list: [${categoryListForPrompt}].
-- Your entire response must be a single, valid JSON object, with no other text before or after it.`,
+- IMPORTANT: Your entire response MUST be a single, valid JSON object and nothing else. Do not wrap it in markdown code fences or add any explanations. The JSON object must have three keys: "content" (string), "youtubeUrl" (string), and "category" (string).`,
                 tools: [{ googleSearch: {} }],
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        content: {
-                            type: Type.STRING,
-                            description: "The full blog post content in Arabic, formatted with Markdown."
-                        },
-                        youtubeUrl: {
-                            type: Type.STRING,
-                            description: "A relevant YouTube video URL for the topic."
-                        },
-                        category: {
-                            type: Type.STRING,
-                            description: `The ID of the most relevant category from the provided list.`
-                        }
-                    },
-                    required: ["content", "youtubeUrl", "category"]
-                }
             }
         });
 
