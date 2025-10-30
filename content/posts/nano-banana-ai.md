@@ -7,6 +7,7 @@ description: استكشف "نانو بانانا" (Nano Banana)، أداة جو�
   سهولة ودقة.
 imageUrl: /uploads/1000140811.jpg
 timestamp: 2025-10-30T12:17:54.219Z
+link: https://play.google.com/store/apps/details?id=com.google.android.apps.bard
 youtubeUrl: https://youtube.com/shorts/5Hh68fLbQMY?si=-42BJE3uiGnQzC0L
 category: Publications
 ---
