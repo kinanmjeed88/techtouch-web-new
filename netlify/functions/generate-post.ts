@@ -92,20 +92,32 @@ const handler: Handler = async (event) => {
 - IMPORTANT: Your entire response MUST be a single, valid JSON object and nothing else. Do not wrap it in markdown code fences or add any explanations. The JSON object must have four keys: "description" (a concise and engaging summary of the post, 2-3 sentences), "content" (string, the full post body), "youtubeUrl" (string), and "category" (string).`;
 
     try {
-        console.log("Attempting AI generation with JSON mode...");
+        console.log("Attempting AI generation with manual parsing mode...");
         const response = await ai.models.generateContent({
-            model: 'gemini-pro', // CHANGED to a stable model
+            model: 'gemini-pro', // Using the stable gemini-pro model
             contents: userPrompt,
             config: {
                 systemInstruction,
-                responseMimeType: "application/json",
                 tools: [{ googleSearch: {} }],
             }
         });
 
-        let parsedResult = JSON.parse(response.text);
+        if (!response.text) {
+            throw new Error("AI returned an empty response.");
+        }
+
+        let jsonString = response.text.trim();
+        const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+
+        if (!jsonMatch || !jsonMatch[0]) {
+            console.error("Failed to extract JSON from AI response:", response.text);
+            throw new Error("AI did not return a valid JSON object structure.");
+        }
+
+        jsonString = jsonMatch[0];
+        let parsedResult = JSON.parse(jsonString);
         parsedResult.content = appendSources(parsedResult.content, response);
-        
+
         const selectedCategory = categories.find(c => c.id === parsedResult.category);
         parsedResult.categoryTitle = selectedCategory ? selectedCategory.title : parsedResult.category;
 
@@ -114,60 +126,20 @@ const handler: Handler = async (event) => {
             headers,
             body: JSON.stringify(parsedResult),
         };
+    } catch (error) {
+        console.error('Error in generate-post function:', error);
+        const errorMessage = error instanceof Error ? error.message : 'فشل إنشاء المحتوى.';
+        let finalError = `فشل إنشاء المحتوى بالذكاء الاصطناعي: ${errorMessage}`;
 
-    } catch (jsonModeError) {
-        console.warn("JSON mode failed. Reason:", jsonModeError, "Falling back to manual parsing mode.");
-
-        try {
-            console.log("Attempting AI generation with manual parsing mode...");
-            const response = await ai.models.generateContent({
-                model: 'gemini-pro', // CHANGED to a stable model
-                contents: userPrompt,
-                config: {
-                    systemInstruction,
-                    tools: [{ googleSearch: {} }],
-                }
-            });
-
-            if (!response.text) {
-                throw new Error("AI returned an empty response in fallback mode.");
-            }
-
-            let jsonString = response.text.trim();
-            const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
-
-            if (!jsonMatch || !jsonMatch[0]) {
-                console.error("Fallback failed: Could not extract JSON from AI response:", response.text);
-                throw new Error("AI did not return a valid JSON object structure in fallback mode.");
-            }
-
-            jsonString = jsonMatch[0];
-            let parsedResult = JSON.parse(jsonString);
-            parsedResult.content = appendSources(parsedResult.content, response);
-
-            const selectedCategory = categories.find(c => c.id === parsedResult.category);
-            parsedResult.categoryTitle = selectedCategory ? selectedCategory.title : parsedResult.category;
-
-            return {
-                statusCode: 200,
-                headers,
-                body: JSON.stringify(parsedResult),
-            };
-        } catch (fallbackError) {
-            console.error('Both JSON mode and fallback mode failed. Final error:', fallbackError);
-            const errorMessage = fallbackError instanceof Error ? fallbackError.message : 'فشل إنشاء المحتوى.';
-            let finalError = `فشل إنشاء المحتوى بالذكاء الاصطناعي: ${errorMessage}`;
-
-            if (fallbackError instanceof SyntaxError) {
-                finalError = `فشل تحليل استجابة الذكاء الاصطناعي في الوضع الاحتياطي.`;
-            }
-        
-            return {
-                statusCode: 500,
-                headers,
-                body: JSON.stringify({ error: finalError }),
-            };
+        if (error instanceof SyntaxError) {
+            finalError = `فشل تحليل استجابة الذكاء الاصطناعي. قد تكون استجابة النموذج غير متوقعة.`;
         }
+    
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: finalError }),
+        };
     }
 };
 
