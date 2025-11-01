@@ -1,9 +1,16 @@
 backend:
-  name: github
-  repo: kinanmjeed88/techtouch-web-new-
+  name: netlify
   branch: main
 
+# Netlify Identity configuration
 publish_mode: editorial_workflow
+display_url: "https://stalwart-tulumba-a742dd.netlify.app"
+editor:
+  preview_path: "/"
+  publish_mode: editorial_workflow
+
+# Site configuration  
+site_url: "https://stalwart-tulumba-a742dd.netlify.app"
 
 media_folder: "public/uploads"
 public_folder: "/uploads"

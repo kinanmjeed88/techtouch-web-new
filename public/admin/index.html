@@ -3,19 +3,31 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Content Manager</title>
+  <title>إدارة المحتوى | TechTouch</title>
   
-  <!-- 
-    ====================================================================
-    التحسينات والتغييرات للعمل على Vercel
-    ====================================================================
-    1.  تم حذف "Netlify Identity Widget" لأنه خاص بـ Netlify فقط.
-        المصادقة ستتم الآن عبر GitHub Backend الذي قمنا بإعداده.
-    2.  تم تعديل مسارات طلبات API الخاصة بمساعد الذكاء الاصطناعي
-        من `/.netlify/functions/...` إلى `/api/...` لتتوافق مع Vercel.
-    3.  تم حذف الكود الخاص بـ `window.netlifyIdentity` لأنه لم يعد ضروريًا.
-    ====================================================================
-  -->
+  <!-- Netlify Identity Widget -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  
+  <!-- Netlify Identity Configuration -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Netlify Identity
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.init({
+          container: document.body,
+          APIUrl: '',
+          onInit: function(identity) {
+            identity.on('login', function(user) {
+              console.log('User logged in', user)
+            });
+            identity.on('logout', function(user) {
+              console.log('User logged out', user)
+            });
+          }
+        });
+      }
+    });
+  </script>
 
   <style>
     /*
@@ -87,8 +99,8 @@
                     alert('لا يوجد محتوى لمعالجته.');
                     return;
                 }
-                //  *** التغيير هنا: تم تعديل المسار ليتوافق مع Vercel ***
-                const response = await fetch('/api/ai-helper', {
+                // Netlify Functions endpoint
+                const response = await fetch('/.netlify/functions/ai-helper', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ content, task }),
@@ -134,8 +146,8 @@
             generateButton.style.cursor = 'not-allowed';
             generateButton.style.opacity = '0.7';
             try {
-                // *** التغيير هنا: تم تعديل المسار ليتوافق مع Vercel ***
-                const response = await fetch('/api/generate-post', {
+                // Netlify Functions endpoint
+                const response = await fetch('/.netlify/functions/generate-post', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, description, link }),
