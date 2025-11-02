@@ -230,13 +230,7 @@
 
 # Gatsby files
 **/.cache/
-# public folder ignored except for specific directories
-public/build/
-public/hot
-public/storage
-public/.cache/
-!public/data/
-!public/admin/
+**/public
 
 # Vue.js
 **/dist/
