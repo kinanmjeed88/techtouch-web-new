@@ -100,3 +100,34 @@ collections:
         max: 5
         required: false
       - { label: "المحتوى", name: "body", widget: "text", required: true }
+
+  - name: "apps_management"
+    label: "إدارة التطبيقات"
+    files:
+      - file: "public/data/apps_database.json"
+        label: "قاعدة بيانات التطبيقات"
+        name: "apps_database"
+        fields:
+          - label: "التصنيفات"
+            name: "categories"
+            widget: "list"
+            summary: "{{fields.icon}} {{fields.name_ar}}"
+            fields:
+              - { label: "المعرّف", name: "id", widget: "string", required: true }
+              - { label: "الاسم بالعربية", name: "name_ar", widget: "string", required: true }
+              - { label: "الاسم بالإنجليزية", name: "name_en", widget: "string", required: true }
+              - { label: "الأيقونة (emoji)", name: "icon", widget: "string", required: true, default: "📱" }
+              - { label: "الوصف بالعربية", name: "description_ar", widget: "string", required: false }
+          
+          - label: "التطبيقات"
+            name: "apps"
+            widget: "list"
+            summary: "{{fields.name_ar}} ({{fields.category}})"
+            fields:
+              - { label: "الاسم بالعربية", name: "name_ar", widget: "string", required: true }
+              - { label: "الاسم بالإنجليزية", name: "name_en", widget: "string", required: true }
+              - { label: "التصنيف", name: "category", widget: "select", options: ["modified", "iptv", "movies", "sports", "design", "ai", "general"], required: true }
+              - { label: "الرابط", name: "link", widget: "string", required: true }
+              - { label: "كلمات مفتاحية بالعربية", name: "keywords_ar", widget: "list", required: false }
+              - { label: "كلمات مفتاحية بالإنجليزية", name: "keywords_en", widget: "list", required: false }
+              - { label: "الوصف (اختياري)", name: "description", widget: "text", required: false }
