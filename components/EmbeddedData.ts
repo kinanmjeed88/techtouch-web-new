@@ -86,6 +86,26 @@ export const embeddedAppsData = {
       featured: true
     },
     {
+      id: 18,
+      name: "ياسين تيفي الأخضر",
+      nameAr: "ياسين تيفي الأخضر",
+      link: "https://t.me/techtouch7/138",
+      category: "iptv",
+      keywords: ["iptv", "yassin", "ياسين", "أخضر", "green"],
+      description: "تطبيق IPTV ياسين الأخضر",
+      featured: false
+    },
+    {
+      id: 19,
+      name: "ياسين تيفي الأسود",
+      nameAr: "ياسين تيفي الأسود",
+      link: "https://t.me/techtouch7/136",
+      category: "iptv",
+      keywords: ["iptv", "yassin", "ياسين", "أسود", "black"],
+      description: "تطبيق IPTV ياسين الأسود",
+      featured: false
+    },
+    {
       id: 9,
       name: "Yalla Shoot",
       nameAr: "يلا شوت",
@@ -223,6 +243,36 @@ export const embeddedAppsData = {
       category: "tools",
       keywords: ["vpn", "privacy", "vpn", "خصوصية"],
       description: "تطبيق VPN مجاني",
+      featured: true
+    },
+    {
+      id: 88,
+      name: "تلجرام الذهبي",
+      nameAr: "تلجرام الذهبي",
+      link: "https://t.me/techtouch7/543",
+      category: "modified_apps",
+      keywords: ["telegram", "modified", "تلجرام", "ذهبي", "tele"],
+      description: "تطبيق تلجرام المعدل",
+      featured: true
+    },
+    {
+      id: 89,
+      name: "واتساب بلس",
+      nameAr: "واتساب بلس",
+      link: "https://t.me/techtouch7/1234",
+      category: "modified_apps",
+      keywords: ["whatsapp", "modified", "واتساب", "plus", "بلس"],
+      description: "تطبيق واتساب بلس",
+      featured: true
+    },
+    {
+      id: 90,
+      name: "تيليجرام إكس",
+      nameAr: "تيليجرام إكس",
+      link: "https://t.me/techtouch7/2345",
+      category: "modified_apps",
+      keywords: ["telegram", "x", "modified", "تيليجرام", "ex"],
+      description: "تطبيق تيليجرام إكس",
       featured: true
     }
   ]

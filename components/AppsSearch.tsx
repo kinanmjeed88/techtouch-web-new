@@ -24,7 +24,7 @@ const AppsSearch: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // تحميل قاعدة البيانات
+  // تحميل قاعدة البيانات مع معالجة أفضل للأخطاء
   useEffect(() => {
     const loadApps = async () => {
       try {
@@ -33,6 +33,7 @@ const AppsSearch: React.FC = () => {
         console.log('🔍 جاري تحميل قاعدة البيانات...');
         
         try {
+          console.log('📡 محاولة تحميل ملف JSON...');
           const response = await fetch('/data/apps_database.json');
           console.log('📡 حالة الاستجابة:', response.status, response.statusText);
           
@@ -40,16 +41,42 @@ const AppsSearch: React.FC = () => {
             const contentType = response.headers.get('content-type');
             console.log('📄 نوع المحتوى:', contentType);
             
-            const data: AppsData = await response.json();
+            // فحص نوع المحتوى قبل محاولة تحليل JSON
+            if (!contentType || !contentType.includes('application/json')) {
+              console.warn('⚠️ نوع المحتوى غير JSON:', contentType);
+              throw new Error(`نوع المحتوى غير صحيح: ${contentType}`);
+            }
+            
+            const responseText = await response.text();
+            console.log('📝 طول النص المستجيب:', responseText.length, 'حرف');
+            
+            // فحص إذا كان النص يبدأ بـ "<" مما يعني HTML
+            if (responseText.trim().startsWith('<') || responseText.includes('<!DOCTYPE')) {
+              console.error('❌ تم استلام HTML بدلاً من JSON');
+              throw new Error('تم استلام صفحة HTML بدلاً من ملف JSON. تحقق من إعدادات الخادم.');
+            }
+            
+            const data: AppsData = JSON.parse(responseText);
             console.log('✅ تم تحميل البيانات بنجاح:', data.apps.length, 'تطبيق');
+            
+            // التحقق من صحة البيانات
+            if (!data.apps || !Array.isArray(data.apps) || data.apps.length === 0) {
+              throw new Error('ملف JSON تالف أو فارغ');
+            }
             
             setAppsData(data);
             setFilteredApps(data.apps);
             setIsLoading(false);
+            console.log('🎉 تم تحميل جميع البيانات بنجاح!');
             return;
+          } else {
+            console.warn('⚠️ استجابة HTTP غير ناجحة:', response.status);
+            throw new Error(`خطأ HTTP: ${response.status}`);
           }
+          
         } catch (fetchError) {
-          console.log('⚠️ فشل تحميل ملف JSON، سيتم استخدام البيانات المدمجة');
+          console.log('⚠️ فشل تحميل ملف JSON:', fetchError.message);
+          console.log('🔄 سيتم استخدام البيانات المدمجة كحل احتياطي');
         }
         
         // استخدام البيانات المدمجة كحل احتياطي
@@ -62,6 +89,7 @@ const AppsSearch: React.FC = () => {
         
       } catch (err) {
         console.error('❌ خطأ في تحميل البيانات:', err);
+        
         // حتى لو فشل كل شيء، استخدم البيانات المدمجة
         console.log('🆘 استخدام البيانات المدمجة كحل طوارئ');
         setAppsData(embeddedAppsData);
@@ -73,7 +101,7 @@ const AppsSearch: React.FC = () => {
     loadApps();
   }, []);
 
-  // البحث الذكي
+  // البحث الذكي المحسن
   const performAISearch = (query: string, apps: App[], category: string): App[] => {
     if (!query && category === 'all') {
       return apps;
@@ -81,7 +109,7 @@ const AppsSearch: React.FC = () => {
 
     let results = apps;
 
-    // فلترة حسب الفئة
+    // فلترة حسب الفئة أولاً
     if (category !== 'all') {
       results = results.filter(app => app.category === category);
     }
@@ -92,66 +120,133 @@ const AppsSearch: React.FC = () => {
     }
 
     const normalizedQuery = query.toLowerCase().trim();
+    const searchTerms = normalizedQuery.split(' ').filter(term => term.length > 0);
     
-    // 1. البحث بالاسم الدقيق
-    const exactMatch = results.filter(
-      app =>
-        app.name.toLowerCase() === normalizedQuery ||
-        app.nameAr.includes(query) ||
-        query.includes(app.nameAr)
-    );
-
-    // 2. البحث الجزئي بالاسم
-    const partialMatch = results.filter(
-      app =>
-        app.name.toLowerCase().includes(normalizedQuery) ||
-        app.nameAr.includes(query) ||
-        app.description.includes(query)
-    );
-
-    // 3. البحث بالكلمات المفتاحية
-    const keywordMatches = results.filter(app =>
-      app.keywords.some(
-        keyword =>
-          keyword.includes(normalizedQuery) ||
-          normalizedQuery.includes(keyword) ||
-          keyword.includes(query)
-      )
-    );
-
-    // 4. البحث الذكي حسب سياق الاستعلام
-    const contextualMatches = results.filter(app => {
-      // البحث بمصطلحات شائعة
-      if (normalizedQuery.includes('رياضة') || normalizedQuery.includes('كورة') || normalizedQuery.includes('مباريات')) {
-        return app.keywords.some(k => k.includes('sport') || k.includes('football') || k.includes('soccer'));
+    // جمع جميع التطبيقات المطابقة في مجموعة واحدة
+    const allMatchingApps = new Set<App>();
+    
+    results.forEach(app => {
+      let isMatch = false;
+      let matchScore = 0;
+      
+      // 1. البحث بالاسم (أعلى درجة مطابقة)
+      const appNameLower = app.name.toLowerCase();
+      const appNameArLower = app.nameAr.toLowerCase();
+      const queryLower = query.toLowerCase();
+      
+      // مطابقة الاسم بالكامل أو الجزئية
+      if (appNameLower === queryLower || appNameArLower === queryLower) {
+        isMatch = true;
+        matchScore += 100; // أعلى درجة مطابقة
+      } else if (appNameLower.includes(queryLower) || appNameArLower.includes(queryLower)) {
+        isMatch = true;
+        matchScore += 80; // درجة عالية
       }
-      if (normalizedQuery.includes('أفلام') || normalizedQuery.includes('مسلسلات') || normalizedQuery.includes('سينما')) {
-        return app.category === 'movies' || app.keywords.some(k => k.includes('movie') || k.includes('cinema'));
+      
+      // البحث بكلمات منفردة
+      for (const term of searchTerms) {
+        if (appNameLower.includes(term) || appNameArLower.includes(term)) {
+          isMatch = true;
+          matchScore += 60;
+        }
       }
-      if (normalizedQuery.includes('ذكاء') || normalizedQuery.includes('ai') || normalizedQuery.includes('ذكي')) {
-        return app.category === 'ai_apps';
+      
+      // 2. البحث بالكلمات المفتاحية
+      app.keywords.forEach(keyword => {
+        const keywordLower = keyword.toLowerCase();
+        if (keywordLower.includes(queryLower) || queryLower.includes(keywordLower)) {
+          isMatch = true;
+          matchScore += 50;
+        }
+        
+        // البحث بكلمات منفردة في الكلمات المفتاحية
+        for (const term of searchTerms) {
+          if (keywordLower.includes(term) || term.includes(keywordLower)) {
+            isMatch = true;
+            matchScore += 40;
+          }
+        }
+      });
+      
+      // 3. البحث في الوصف
+      if (app.description.toLowerCase().includes(queryLower)) {
+        isMatch = true;
+        matchScore += 30;
       }
-      if (normalizedQuery.includes('محدثة') || normalizedQuery.includes('معدلة') || normalizedQuery.includes('ذهبي')) {
-        return app.category === 'modified_apps';
+      
+      // 4. البحث الذكي حسب السياق
+      const contextualMatch = checkContextualMatch(normalizedQuery, app);
+      if (contextualMatch) {
+        isMatch = true;
+        matchScore += 25;
       }
-      if (normalizedQuery.includes('بث') || normalizedQuery.includes('iptv') || normalizedQuery.includes('تلفزيون')) {
-        return app.category === 'iptv';
+      
+      // إضافة التطبيق إذا كان متطابقاً
+      if (isMatch) {
+        allMatchingApps.add(app);
       }
-      return false;
     });
-
-    // دمج النتائج وإزالة التكرارات
-    const allResults = [...exactMatch, ...partialMatch, ...keywordMatches, ...contextualMatches];
-    const uniqueResults = Array.from(new Set(allResults.map(app => app.id))).map(
-      id => allResults.find(app => app.id === id)!
-    );
-
-    // ترتيب النتائج: المميزة أولاً
-    return uniqueResults.sort((a, b) => {
+    
+    // تحويل إلى مصفوفة وترتيب حسب درجة المطابقة والميزات
+    const finalResults = Array.from(allMatchingApps);
+    
+    return finalResults.sort((a, b) => {
+      // المميزة أولاً
       if (a.featured && !b.featured) return -1;
       if (!a.featured && b.featured) return 1;
+      
+      // ثم حسب درجة المطابقة (يمكن حسابها لاحقاً إذا لزم الأمر)
       return 0;
     });
+  };
+  
+  // البحث الذكي حسب السياق
+  const checkContextualMatch = (query: string, app: App): boolean => {
+    const queryLower = query.toLowerCase();
+    
+    // البحث بالرياضة
+    if (queryLower.includes('رياضة') || queryLower.includes('كورة') || queryLower.includes('مباريات') || 
+        queryLower.includes('football') || queryLower.includes('soccer') || queryLower.includes('sport')) {
+      return app.keywords.some(k => k.toLowerCase().includes('sport') || k.toLowerCase().includes('football') || 
+                                   k.toLowerCase().includes('soccer') || k.toLowerCase().includes('كرة'));
+    }
+    
+    // البحث بالأفلام والمسلسلات
+    if (queryLower.includes('أفلام') || queryLower.includes('مسلسلات') || queryLower.includes('سينما') ||
+        queryLower.includes('movies') || queryLower.includes('series') || queryLower.includes('cinema')) {
+      return app.category === 'movies' || app.keywords.some(k => k.toLowerCase().includes('movie') || 
+                                                                  k.toLowerCase().includes('cinema') ||
+                                                                  k.toLowerCase().includes('أفلام'));
+    }
+    
+    // البحث بالذكاء الاصطناعي
+    if (queryLower.includes('ذكاء') || queryLower.includes('ai') || queryLower.includes('ذكي')) {
+      return app.category === 'ai_apps' || app.keywords.some(k => k.toLowerCase().includes('ai') || 
+                                                                   k.toLowerCase().includes('ذكاء'));
+    }
+    
+    // البحث بالتطبيقات المحدثة
+    if (queryLower.includes('محدثة') || queryLower.includes('معدلة') || queryLower.includes('ذهبي') ||
+        queryLower.includes('modified') || queryLower.includes('gold')) {
+      return app.category === 'modified_apps' || app.keywords.some(k => k.toLowerCase().includes('modified') || 
+                                                                          k.toLowerCase().includes('gold') ||
+                                                                          k.toLowerCase().includes('محدثة'));
+    }
+    
+    // البحث بالبث
+    if (queryLower.includes('بث') || queryLower.includes('iptv') || queryLower.includes('تلفزيون') ||
+        queryLower.includes('live') || queryLower.includes('streaming')) {
+      return app.category === 'iptv' || app.keywords.some(k => k.toLowerCase().includes('iptv') || 
+                                                               k.toLowerCase().includes('live') ||
+                                                               k.toLowerCase().includes('streaming'));
+    }
+    
+    // البحث بتطبيقات الياسين
+    if (queryLower.includes('ياسين') || queryLower.includes('yassin')) {
+      return app.keywords.some(k => k.toLowerCase().includes('ياسين') || k.toLowerCase().includes('yassin'));
+    }
+    
+    return false;
   };
 
   // تطبيق البحث والفلترة
@@ -190,15 +285,22 @@ const AppsSearch: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (error && appsData === null) {
     return (
       <div className="animate-fadeIn">
         <h2 className="text-3xl font-bold text-center mb-8">بحث التطبيقات بالذكاء الاصطناعي</h2>
         <div className="text-center py-20">
-          <p className="text-red-500 text-xl">{error}</p>
+          <div className="text-6xl mb-4">⚠️</div>
+          <h3 className="text-xl font-semibold text-red-400 mb-2">خطأ في تحميل البيانات</h3>
+          <p className="text-gray-400 mb-4 max-w-md mx-auto">
+            تم تحميل البيانات الأساسية بنجاح. يمكنك استخدام البحث في التطبيقات المتاحة.
+          </p>
+          <div className="text-sm text-gray-500 mb-6">
+            عدد التطبيقات المتاحة: {embeddedAppsData.apps.length} تطبيق
+          </div>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300"
+            className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300"
           >
             إعادة المحاولة
           </button>
