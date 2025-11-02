@@ -20,7 +20,7 @@ const Footer: React.FC<FooterProps> = ({ socials }) => {
         <footer className="mt-12 py-8" style={{ backgroundColor: 'rgba(31, 41, 55, 0.5)' }}>
             <div className="container mx-auto px-4 text-center">
                 <p className="text-gray-500 text-xs sm:text-sm">
-                    &copy; {new Date().getFullYear()} <span dir="ltr">techtouch0</span>. جميع الحقوق محفوظة.
+                    &copy; {new Date().getFullYear()} <span dir="ltr">techtouch تقنية</span>. جميع الحقوق محفوظة.
                 </p>
             </div>
         </footer>
@@ -48,7 +48,7 @@ const Footer: React.FC<FooterProps> = ({ socials }) => {
           ))}
         </div>
         <p className="text-gray-500 text-xs sm:text-sm">
-          &copy; {new Date().getFullYear()} <span dir="ltr">techtouch0</span>. جميع الحقوق محفوظة.
+          &copy; {new Date().getFullYear()} <span dir="ltr">techtouch تقنية</span>. جميع الحقوق محفوظة.
         </p>
       </div>
     </footer>

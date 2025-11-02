@@ -20,7 +20,7 @@ collections:
             widget: "object"
             fields:
               - { label: "شعار الموقع (الصورة الشخصية)", name: "logoUrl", widget: "image", required: true }
-              - { label: "اسم الموقع", name: "siteName", widget: "string", default: "techtouch0", required: true }
+              - { label: "اسم الموقع", name: "siteName", widget: "string", default: "techtouch تقنية", required: true }
               - { label: "نص الإعلان", name: "announcementText", widget: "string", required: true }
               - { label: "لون نص الإعلان", name: "announcementTextColor", widget: "color", required: false, default: "#D1D5DB" }
               - { label: "رابط الإعلان (اختياري)", name: "announcementLink", widget: "string", required: false }

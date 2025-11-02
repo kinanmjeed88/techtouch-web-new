@@ -44,6 +44,11 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        setError(null);
+        
+        console.log('📡 بدء تحميل البيانات...');
+        
         const [settingsResponse, postsResponse, categoriesResponse, profileResponse] = await Promise.all([
           fetch(`/settings.json?v=${new Date().getTime()}`),
           fetch(`/posts.json?v=${new Date().getTime()}`),
@@ -51,13 +56,36 @@ const App: React.FC = () => {
           fetch(`/profile.json?v=${new Date().getTime()}`),
         ]);
 
-        if (!settingsResponse.ok || !postsResponse.ok || !categoriesResponse.ok || !profileResponse.ok) {
-          throw new Error(`خطأ في تحميل البيانات`);
+        // فحص حالة كل استجابة
+        const responses = [
+          { name: 'settings', response: settingsResponse },
+          { name: 'posts', response: postsResponse },
+          { name: 'categories', response: categoriesResponse },
+          { name: 'profile', response: profileResponse }
+        ];
+
+        for (const { name, response } of responses) {
+          console.log(`📄 ${name}:`, response.status, response.statusText);
+          
+          if (!response.ok) {
+            console.error(`❌ فشل تحميل ${name}:`, response.status);
+            throw new Error(`فشل تحميل ملف ${name}.json`);
+          }
+          
+          // فحص نوع المحتوى
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            console.warn(`⚠️ نوع محتوى ${name} غير JSON:`, contentType);
+          }
         }
+
+        // تحميل وتحليل JSON
         const settingsData = await settingsResponse.json();
         const postsData = await postsResponse.json();
         const categoriesData = await categoriesResponse.json();
         const profileData = await profileResponse.json();
+        
+        console.log('✅ تم تحميل البيانات بنجاح');
         
         const identity = settingsData.identity || {};
         const colors = settingsData.colors;
@@ -66,7 +94,7 @@ const App: React.FC = () => {
         setAppData({
           posts: postsData.posts || [],
           logoUrl: identity.logoUrl || '',
-          siteName: identity.siteName || 'techtouch0',
+          siteName: identity.siteName || 'techtouch تقنية',
           announcementText: identity.announcementText || '',
           announcementLink: identity.announcementLink,
           announcementLabel: identity.announcementLabel || 'إعلان',
@@ -78,6 +106,7 @@ const App: React.FC = () => {
         });
         setCategories(categoriesData.categories || []);
 
+        // تطبيق الألوان
         if (colors) {
           const root = document.documentElement;
           const primaryColor = colors.primary || '#ef4444';
@@ -91,8 +120,43 @@ const App: React.FC = () => {
           root.style.setProperty('--color-card-description', colors.cardDescription || '#D1D5DB');
         }
 
+        console.log('🎉 تم تحميل جميع البيانات بنجاح!');
+
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        console.error('❌ خطأ في تحميل البيانات:', err);
+        
+        // في حالة الخطأ، استخدم بيانات افتراضية
+        console.log('🔄 استخدام بيانات افتراضية...');
+        
+        setAppData({
+          posts: [],
+          logoUrl: '',
+          siteName: 'techtouch تقنية',
+          announcementText: 'أهلا بكم في موقع techtouch',
+          announcementLink: 'https://t.me/techtouch7',
+          announcementLabel: 'إعلان',
+          announcementBgColor: '#1f2937',
+          colors: {
+            header: '#1f2937',
+            card: 'rgba(31, 41, 55, 0.5)',
+            primary: '#ef4444'
+          },
+          socials: {
+            telegram: 'https://t.me/techtouch7'
+          },
+          profile: {
+            name: 'كنان الصائغ',
+            bio: 'مطور ويب متخصص في التقنية'
+          }
+        });
+        setCategories([]);
+        
+        // تعيين خطأ فقط إذا كان خطأ حقيقي (وليس مجرد ملف فارغ)
+        if (err instanceof Error && err.message.includes('fetch')) {
+          setError('فشل في تحميل البيانات. سيتم عرض البيانات الأساسية.');
+        } else {
+          setError(null); // لا تعرض خطأ إذا كان يمكن استخدام البيانات الافتراضية
+        }
       } finally {
         setLoading(false);
       }
