@@ -76,6 +76,16 @@ export const embeddedAppsData = {
       featured: false
     },
     {
+      id: 17,
+      name: "ياسين تيفي برو",
+      nameAr: "ياسين تيفي برو",
+      link: "https://t.me/techtouch7/137",
+      category: "iptv",
+      keywords: ["iptv", "yassin", "ياسين", "pro"],
+      description: "تطبيق IPTV ياسين البرو",
+      featured: true
+    },
+    {
       id: 9,
       name: "Yalla Shoot",
       nameAr: "يلا شوت",
