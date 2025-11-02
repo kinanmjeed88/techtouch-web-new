@@ -84,13 +84,13 @@ const App: React.FC = () => {
   };
 
   // وظيفة مساعدة لتحميل وتحليل ملف JSON مع معالجة الأخطاء الشاملة
-  const loadJSONFile = async <T>(
+  async function loadJSONFile<T>(
     url: string, 
     fileName: string, 
     requiredFields: string[] = [],
     defaultValue: T,
     timeout = 10000
-  ): Promise<{ data: T; hasError: boolean; error?: string }> => {
+  ): Promise<{ data: T; hasError: boolean; error?: string }> {
     try {
       console.log(`🔄 تحميل ${fileName}...`);
       
@@ -143,7 +143,8 @@ const App: React.FC = () => {
       console.error(`❌ ${errorMsg}`);
       return { data: defaultValue, hasError: true, error: errorMsg };
     }
-  };
+  }
+
 
   useEffect(() => {
     const fetchData = async () => {
