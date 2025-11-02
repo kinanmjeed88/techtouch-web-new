@@ -42,6 +42,8 @@ const handler: Handler = async (event) => {
   }
 
   try {
+    console.log('🎨 بدء إنشاء الصورة...', { prompt, accountId: CLOUDFLARE_ACCOUNT_ID });
+    
     // Call Cloudflare AI API for image generation
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell`,
@@ -64,12 +66,29 @@ const handler: Handler = async (event) => {
       }
     );
 
+    console.log('📡 استجابة Cloudflare API:', { status: response.status, statusText: response.statusText });
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Cloudflare API error: ${errorData.error?.message || response.statusText}`);
+      const errorText = await response.text();
+      console.error('❌ خطأ من Cloudflare API:', errorText);
+      
+      let errorMessage = 'فشل في إنشاء الصورة';
+      
+      if (response.status === 401) {
+        errorMessage = 'خطأ في المصادقة - تأكد من صحة CLOUDFLARE_API_TOKEN';
+      } else if (response.status === 403) {
+        errorMessage = 'خطأ في الصلاحيات - تأكد من تفعيل Workers AI في حسابك';
+      } else if (response.status === 404) {
+        errorMessage = 'خطأ في الـ Account ID أو النموذج غير متوفر';
+      } else if (response.status === 429) {
+        errorMessage = 'تم تجاوز حد الطلبات - انتظر قليلاً وحاول مرة أخرى';
+      }
+      
+      throw new Error(`${errorMessage} (${response.status})`);
     }
 
     const data = await response.json();
+    console.log('✅ استجابة ناجحة من Cloudflare API');
 
     if (!data.success || !data.result || !data.result.images || data.result.images.length === 0) {
       throw new Error('لم يتم إنشاء أي صور من قبل Cloudflare AI.');
@@ -85,30 +104,30 @@ const handler: Handler = async (event) => {
       body: JSON.stringify({ imageUrl }),
     };
   } catch (error) {
-    console.error('Error calling Cloudflare Image API:', error);
+    console.error('❌ خطأ في إنشاء الصورة:', error);
     const errorMessage = error instanceof Error ? error.message : 'فشل إنشاء الصورة.';
-
-    // More user-friendly messages for API key issues
+    
+    // رسائل خطأ مفيدة للمستخدم
+    let userError = errorMessage;
+    
     if (errorMessage.includes('Authentication') || errorMessage.includes('401')) {
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: 'خطأ في المصادقة مع Cloudflare AI. يرجى التحقق من مفتاح API.' })
-      };
-    }
-
-    if (errorMessage.includes('Account') || errorMessage.includes('403')) {
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: 'خطأ في الوصول للحساب. يرجى التحقق من Account ID.' })
-      };
+      userError = 'خطأ في المصادقة - تأكد من صحة CLOUDFLARE_API_TOKEN';
+    } else if (errorMessage.includes('Account') || errorMessage.includes('403')) {
+      userError = 'خطأ في الوصول للحساب - تأكد من تفعيل Workers AI في حسابك';
+    } else if (errorMessage.includes('404')) {
+      userError = 'خطأ في الـ Account ID - تأكد من صحة CLOUDFLARE_ACCOUNT_ID';
+    } else if (errorMessage.includes('429') || errorMessage.includes('rate limit')) {
+      userError = 'تم تجاوز حد الطلبات - انتظر قليلاً وحاول مرة أخرى';
     }
 
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: errorMessage })
+      body: JSON.stringify({ 
+        error: userError,
+        details: 'للحصول على المساعدة، تأكد من إضافة متغيرات البيئة في Netlify Dashboard',
+        timestamp: new Date().toISOString()
+      })
     };
   }
 };
