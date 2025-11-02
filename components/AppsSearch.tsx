@@ -23,6 +23,46 @@ const AppsSearch: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAllApps, setShowAllApps] = useState(false);
 
+  // تحويل البيانات من البنية الجديدة إلى البنية القديمة
+  const convertNewFormatToOld = (rawData: any): AppsData => {
+    // تحويل التصنيفات من array إلى object
+    const categories: { [key: string]: Category } = {};
+    const categoryColors: { [key: string]: string } = {
+      modified: '#FFD700',
+      iptv: '#FF6B6B',
+      movies: '#4ECDC4',
+      sports: '#45B7D1',
+      design: '#96CEB4',
+      ai: '#FFEAA7',
+      tools: '#DDA0DD'
+    };
+
+    if (rawData.categories && Array.isArray(rawData.categories)) {
+      rawData.categories.forEach((cat: any) => {
+        categories[cat.id] = {
+          name: cat.name_ar,
+          nameEn: cat.name_en,
+          icon: cat.icon,
+          color: categoryColors[cat.id] || '#808080'
+        };
+      });
+    }
+
+    // تحويل التطبيقات
+    const apps: App[] = rawData.apps?.map((app: any) => ({
+      id: app.id,
+      name: app.name_en || app.name_ar,
+      nameAr: app.name_ar,
+      link: app.download_link || app.link,
+      category: app.category,
+      keywords: [...(app.keywords_ar || []), ...(app.keywords_en || [])],
+      description: app.description || `تطبيق ${app.name_ar}`,
+      featured: false
+    })) || [];
+
+    return { categories, apps };
+  };
+
   // تحميل قاعدة البيانات مع معالجة أفضل للأخطاء
   useEffect(() => {
     const loadApps = async () => {
@@ -55,8 +95,12 @@ const AppsSearch: React.FC = () => {
               throw new Error('تم استلام صفحة HTML بدلاً من ملف JSON. تحقق من إعدادات الخادم.');
             }
             
-            const data: AppsData = JSON.parse(responseText);
-            console.log('✅ تم تحميل البيانات بنجاح:', data.apps.length, 'تطبيق');
+            const rawData = JSON.parse(responseText);
+            console.log('✅ تم تحميل البيانات الخام بنجاح');
+            
+            // تحويل البيانات إلى البنية القديمة
+            const data: AppsData = convertNewFormatToOld(rawData);
+            console.log('✅ تم تحويل البيانات بنجاح:', data.apps.length, 'تطبيق');
             
             // التحقق من صحة البيانات
             if (!data.apps || !Array.isArray(data.apps) || data.apps.length === 0) {
@@ -73,17 +117,18 @@ const AppsSearch: React.FC = () => {
             throw new Error(`خطأ HTTP: ${response.status}`);
           }
           
-        } catch (fetchError) {
+        } catch (fetchError: any) {
           console.log('⚠️ فشل تحميل ملف JSON:', fetchError.message);
           console.log('🔄 سيتم استخدام البيانات المدمجة كحل احتياطي');
         }
         
         // استخدام البيانات المدمجة كحل احتياطي
         console.log('🔄 استخدام البيانات المدمجة كحل احتياطي');
-        console.log('📊 عدد التطبيقات في البيانات المدمجة:', embeddedAppsData.apps.length);
+        const fallbackData = convertNewFormatToOld(embeddedAppsData);
+        console.log('📊 عدد التطبيقات في البيانات المدمجة:', fallbackData.apps.length);
         
-        setAppsData(embeddedAppsData);
-        setFilteredApps(embeddedAppsData.apps);
+        setAppsData(fallbackData);
+        setFilteredApps(fallbackData.apps);
         setIsLoading(false);
         
       } catch (err) {
@@ -91,8 +136,9 @@ const AppsSearch: React.FC = () => {
         
         // حتى لو فشل كل شيء، استخدم البيانات المدمجة
         console.log('🆘 استخدام البيانات المدمجة كحل طوارئ');
-        setAppsData(embeddedAppsData);
-        setFilteredApps(embeddedAppsData.apps);
+        const fallbackData = convertNewFormatToOld(embeddedAppsData);
+        setAppsData(fallbackData);
+        setFilteredApps(fallbackData.apps);
         setIsLoading(false);
       }
     };
