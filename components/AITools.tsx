@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import AIChat from './AIChat';
-import CloudflareImageGenerator from './CloudflareImageGenerator';
-import { ChatBubbleIcon, ImageIcon } from './Icons';
+import AppsSearch from './AppsSearch';
+import AdminPanel from './AdminPanel';
+import { ChatBubbleIcon, SearchIcon, CogIcon } from './Icons';
 
 // A map to store component references and their metadata.
 const toolComponents = {
@@ -11,11 +12,17 @@ const toolComponents = {
     description: 'تحدث مع Gemini لطرح الأسئلة والحصول على إجابات.',
     icon: <ChatBubbleIcon className="w-8 h-8 text-red-400" />,
   },
-  cloudflareImage: {
-    Component: CloudflareImageGenerator,
-    title: 'مولّد الصور (Cloudflare)',
-    description: 'أنشئ صوراً باستخدام نموذج Flux من Cloudflare AI.',
-    icon: <ImageIcon className="w-8 h-8 text-red-400" />,
+  appsSearch: {
+    Component: AppsSearch,
+    title: 'بحث التطبيقات بالذكاء الاصطناعي',
+    description: 'ابحث عن أي تطبيق تريده من بين 90 تطبيق بذكاء اصطناعي متقدم.',
+    icon: <SearchIcon className="w-8 h-8 text-red-400" />,
+  },
+  adminPanel: {
+    Component: AdminPanel,
+    title: 'لوحة تحكم الأدمن',
+    description: 'إدارة التطبيقات وقاعدة البيانات بسهولة.',
+    icon: <CogIcon className="w-8 h-8 text-red-400" />,
   },
 };
 
