@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SearchIcon, GridIcon, SparklesIcon } from './Icons';
 import AppCard, { App } from './AppCard';
 import SearchFilters from './SearchFilters';
+import { embeddedAppsData } from './EmbeddedData';
 
 interface Category {
   name: string;
@@ -31,27 +32,40 @@ const AppsSearch: React.FC = () => {
         setError(null);
         console.log('🔍 جاري تحميل قاعدة البيانات...');
         
-        const response = await fetch('/data/apps_database.json');
-        console.log('📡 حالة الاستجابة:', response.status, response.statusText);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ نص الخطأ:', errorText);
-          throw new Error(`فشل تحميل قاعدة البيانات: ${response.status} ${response.statusText}`);
+        try {
+          const response = await fetch('/data/apps_database.json');
+          console.log('📡 حالة الاستجابة:', response.status, response.statusText);
+          
+          if (response.ok) {
+            const contentType = response.headers.get('content-type');
+            console.log('📄 نوع المحتوى:', contentType);
+            
+            const data: AppsData = await response.json();
+            console.log('✅ تم تحميل البيانات بنجاح:', data.apps.length, 'تطبيق');
+            
+            setAppsData(data);
+            setFilteredApps(data.apps);
+            setIsLoading(false);
+            return;
+          }
+        } catch (fetchError) {
+          console.log('⚠️ فشل تحميل ملف JSON، سيتم استخدام البيانات المدمجة');
         }
         
-        const contentType = response.headers.get('content-type');
-        console.log('📄 نوع المحتوى:', contentType);
+        // استخدام البيانات المدمجة كحل احتياطي
+        console.log('🔄 استخدام البيانات المدمجة كحل احتياطي');
+        console.log('📊 عدد التطبيقات في البيانات المدمجة:', embeddedAppsData.apps.length);
         
-        const data: AppsData = await response.json();
-        console.log('✅ تم تحميل البيانات بنجاح:', data.apps.length, 'تطبيق');
-        
-        setAppsData(data);
-        setFilteredApps(data.apps);
+        setAppsData(embeddedAppsData);
+        setFilteredApps(embeddedAppsData.apps);
         setIsLoading(false);
+        
       } catch (err) {
         console.error('❌ خطأ في تحميل البيانات:', err);
-        setError(err instanceof Error ? err.message : 'حدث خطأ غير معروف');
+        // حتى لو فشل كل شيء، استخدم البيانات المدمجة
+        console.log('🆘 استخدام البيانات المدمجة كحل طوارئ');
+        setAppsData(embeddedAppsData);
+        setFilteredApps(embeddedAppsData.apps);
         setIsLoading(false);
       }
     };
