@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار بحث التطبيقات</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .search-box { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .app-card { background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 8px; border-right: 4px solid #ff4444; }
+        .app-title { font-weight: bold; color: #333; margin-bottom: 5px; }
+        .app-description { color: #666; font-size: 14px; }
+        .app-link { color: #ff4444; text-decoration: none; display: inline-block; margin-top: 5px; padding: 5px 10px; background: #ff4444; color: white; border-radius: 4px; }
+        .test-buttons { margin: 20px 0; }
+        .test-button { background: #007bff; color: white; padding: 8px 15px; border: none; border-radius: 4px; margin: 5px; cursor: pointer; }
+        .test-button:hover { background: #0056b3; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار بحث التطبيقات</h1>
+        <div id="status" class="info">⏳ جاري التحميل...</div>
+        <div id="root"></div>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        // البيانات المدمجة (نسخ من EmbeddedData.ts)
+        const embeddedAppsData = {
+            categories: {
+                iptv: { name: "بث مباشر - IPTV", nameEn: "Live Streaming - IPTV", icon: "📺", color: "#FF6B6B" },
+                movies: { name: "أفلام ومسلسلات", nameEn: "Movies & Series", icon: "🎬", color: "#4ECDC4" },
+                modified_apps: { name: "تطبيقات محدثة", nameEn: "Modified Apps", icon: "💎", color: "#45B7D1" },
+                tools: { name: "أدوات ومعدات", nameEn: "Tools & Utilities", icon: "🔧", color: "#96CEB4" },
+                ai_apps: { name: "ذكاء اصطناعي", nameEn: "AI Applications", icon: "🤖", color: "#FFEAA7" },
+                entertainment: { name: "ترفيه وموسيقى", nameEn: "Entertainment", icon: "🎮", color: "#DDA0DD" },
+                productivity: { name: "إنتاجية", nameEn: "Productivity", icon: "📱", color: "#F4A261" }
+            },
+            apps: [
+                { id: 1, name: "Black Ultra", nameAr: "بلاك اولترا", link: "https://t.me/techtouch7/2719", category: "iptv", keywords: ["iptv", "iptv", "streaming", "بث مباشر", "تلفزيون"], description: "تطبيق بث مباشر متقدم", featured: true },
+                { id: 2, name: "OTF TV", nameAr: "OTF TV", link: "https://t.me/techtouch7/3873", category: "iptv", keywords: ["iptv", "live", "streaming", "بث", "تلفزيون"], description: "تطبيق IPTV عالي الجودة", featured: false },
+                { id: 3, name: "ZAIN LIVE", nameAr: "زين لايف", link: "https://t.me/techtouch7/1992", category: "iptv", keywords: ["iptv", "zain", "live", "زين", "بث"], description: "بث مباشر لقناة زين", featured: false },
+                { id: 17, name: "ياسين تيفي برو", nameAr: "ياسين تيفي برو", link: "https://t.me/techtouch7/137", category: "iptv", keywords: ["iptv", "yassin", "ياسين", "pro"], description: "تطبيق IPTV ياسين البرو", featured: true },
+                { id: 9, name: "Yalla Shoot", nameAr: "يلا شوت", link: "https://t.me/techtouch7/674", category: "entertainment", keywords: ["sports", "football", "soccer", "رياضة", "كرة قدم", "يلا شوت"], description: "موقع مشاهدة المباريات", featured: true },
+                { id: 11, name: "Mix Flix TV", nameAr: "ميكس فليكس تي في", link: "https://t.me/techtouch7/1450", category: "movies", keywords: ["movies", "series", "أفلام", "مسلسلات", "mix", "flix"], description: "تطبيق مشاهدة الأفلام والمسلسلات", featured: true },
+                { id: 13, name: "Shoof", nameAr: "شوف", link: "https://t.me/techtouch7/372", category: "movies", keywords: ["movies", "series", "أفلام", "مسلسلات", "shuf", "شوف"], description: "منصة مشاهدة الأفلام شوف", featured: true },
+                { id: 42, name: "Netflix", nameAr: "نتفليكس", link: "https://t.me/techtouch7/2676", category: "movies", keywords: ["netflix", "streaming", "نتفليكس", "أفلام"], description: "تطبيق Netflix المعدل", featured: true },
+                { id: 54, name: "واتساب الذهبي", nameAr: "واتساب الذهبي", link: "https://t.me/techtouch7/3071", category: "modified_apps", keywords: ["whatsapp", "modified", "واتساب", "ذهبي"], description: "تطبيق واتساب المعدل", featured: true },
+                { id: 55, name: "ماسنجر الذهبي", nameAr: "ماسنجر الذهبي", link: "https://t.me/techtouch7/9?single", category: "modified_apps", keywords: ["messenger", "modified", "فيسبوك", "ماسنجر"], description: "تطبيق ماسنجر المعدل", featured: true },
+                { id: 57, name: "انستجرام الذهبي", nameAr: "انستجرام الذهبي", link: "https://t.me/techtouch7/283", category: "modified_apps", keywords: ["instagram", "modified", "انستجرام", "ذهبي"], description: "تطبيق انستجرام المعدل", featured: true },
+                { id: 61, name: "يوتيوب الذهبي", nameAr: "يوتيوب الذهبي", link: "https://t.me/techtouch7/222?single", category: "modified_apps", keywords: ["youtube", "modified", "يوتيوب", "ذهبي"], description: "تطبيق يوتيوب المعدل", featured: true },
+                { id: 65, name: "كيبورد الذكاء الاصطناعي", nameAr: "كيبورد الذكاء الاصطناعي", link: "https://t.me/techtouch7/1733", category: "ai_apps", keywords: ["ai", "keyboard", "ذكاء اصطناعي", "كيبورد"], description: "كيبورد ذكي بالذكاء الاصطناعي", featured: true },
+                { id: 69, name: "ChatOn", nameAr: "شات أون", link: "https://t.me/techtouch7/1489", category: "ai_apps", keywords: ["chat", "ai", "شات", "ذكاء اصطناعي"], description: "تطبيق محادثة بالذكاء الاصطناعي", featured: true },
+                { id: 75, name: "FaceApp", nameAr: "فيس آب", link: "https://t.me/techtouch7/1950", category: "ai_apps", keywords: ["face", "ai", "صور", "وجوه", "فيس آب"], description: "تعديل الصور بالذكاء الاصطناعي", featured: true },
+                { id: 83, name: "Remini", nameAr: "رميني", link: "https://t.me/techtouch7/456", category: "productivity", keywords: ["photo", "enhance", "تحسين صور", "رميني"], description: "تطبيق تحسين جودة الصور", featured: true },
+                { id: 84, name: "PicsArt", nameAr: "بيكس آرت", link: "https://t.me/techtouch7/76", category: "productivity", keywords: ["design", "photo", "تصميم", "صور", "بيكس آرت"], description: "تطبيق التصميم الشامل", featured: true },
+                { id: 86, name: "1.1.1.1", nameAr: "1.1.1.1", link: "https://t.me/techtouch7/889", category: "tools", keywords: ["vpn", "privacy", "vpn", "خصوصية"], description: "تطبيق VPN مجاني", featured: true }
+            ]
+        };
+
+        function AppSearchTest() {
+            const [searchQuery, setSearchQuery] = useState('');
+            const [results, setResults] = useState([]);
+
+            const performSearch = (query) => {
+                const apps = embeddedAppsData.apps;
+                if (!query) {
+                    setResults(apps);
+                    return;
+                }
+
+                const normalizedQuery = query.toLowerCase().trim();
+                let found = [];
+                
+                // البحث بالاسم الدقيق
+                found = apps.filter(app => 
+                    app.name.toLowerCase().includes(normalizedQuery) ||
+                    app.nameAr.includes(query) ||
+                    query.includes(app.nameAr) ||
+                    app.keywords.some(k => k.includes(normalizedQuery) || normalizedQuery.includes(k))
+                );
+                
+                setResults(found);
+            };
+
+            useEffect(() => {
+                performSearch(searchQuery);
+            }, [searchQuery]);
+
+            return (
+                <div>
+                    <div className="test-buttons">
+                        <button className="test-button" onClick={() => setSearchQuery('ياسين')}>🔍 بحث "ياسين"</button>
+                        <button className="test-button" onClick={() => setSearchQuery('iptv')}>🔍 بحث "iptv"</button>
+                        <button className="test-button" onClick={() => setSearchQuery('ذهبي')}>🔍 بحث "ذهبي"</button>
+                        <button className="test-button" onClick={() => setSearchQuery('')}>🗑️ مسح البحث</button>
+                    </div>
+                    
+                    <input
+                        type="text"
+                        className="search-box"
+                        placeholder="ابحث هنا..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    
+                    <div style={{marginTop: '20px'}}>
+                        <h3>النتائج ({results.length} تطبيق):</h3>
+                        {results.length === 0 && (
+                            <div style={{color: 'red', textAlign: 'center', padding: '20px'}}>
+                                لم يتم العثور على تطبيقات مطابقة
+                            </div>
+                        )}
+                        {results.map(app => (
+                            <div key={app.id} className="app-card">
+                                <div className="app-title">
+                                    {app.nameAr} ({app.name})
+                                </div>
+                                <div className="app-description">
+                                    {app.description}
+                                </div>
+                                <div style={{color: '#666', fontSize: '12px'}}>
+                                    الفئة: {embeddedAppsData.categories[app.category]?.name}
+                                </div>
+                                <a href={app.link} target="_blank" className="app-link">
+                                    رابط التحميل
+                                </a>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // اختبار البيانات المدمجة
+        function testData() {
+            const statusDiv = document.getElementById('status');
+            
+            if (embeddedAppsData && embeddedAppsData.apps.length > 0) {
+                statusDiv.innerHTML = '<div class="success">✅ البيانات المدمجة محملة بنجاح! عدد التطبيقات: ' + embeddedAppsData.apps.length + '</div>';
+                
+                // اختبار بحث ياسين
+                const yassinApps = embeddedAppsData.apps.filter(app => 
+                    app.nameAr.includes('ياسين') || app.name.includes('ياسين') || app.keywords.some(k => k.includes('ياسين'))
+                );
+                
+                if (yassinApps.length > 0) {
+                    statusDiv.innerHTML += '<br/><div class="success">✅ تم العثور على ' + yassinApps.length + ' تطبيق يحتوي على "ياسين"</div>';
+                } else {
+                    statusDiv.innerHTML += '<br/><div class="error">❌ لم يتم العثور على أي تطبيق يحتوي على "ياسين"</div>';
+                }
+                
+                // عرض التطبيقات التي تحتوي على ياسين
+                yassinApps.forEach(app => {
+                    statusDiv.innerHTML += '<br/>• ' + app.nameAr + ' - ' + app.description;
+                });
+            } else {
+                statusDiv.innerHTML = '<div class="error">❌ فشل في تحميل البيانات المدمجة</div>';
+            }
+        }
+
+        // تشغيل الاختبار
+        ReactDOM.render(<AppSearchTest />, document.getElementById('root'));
+        
+        // تشغيل اختبار البيانات بعد 1 ثانية
+        setTimeout(testData, 1000);
+    </script>
+</body>
+</html>
