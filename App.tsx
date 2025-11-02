@@ -41,6 +41,110 @@ const App: React.FC = () => {
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
+  // وظيفة مساعدة لفحص صحة JSON
+  const validateJSON = (data: any, fileName: string, requiredFields: string[] = []): boolean => {
+    // فحص أساسي للـ JSON
+    if (!data || typeof data !== 'object') {
+      console.warn(`⚠️ ${fileName}: البيانات ليست object صالح`);
+      return false;
+    }
+
+    // فحص الحقول المطلوبة
+    for (const field of requiredFields) {
+      if (!(field in data)) {
+        console.warn(`⚠️ ${fileName}: الحقل المطلوب "${field}" غير موجود`);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  // وظيفة مساعدة لطلب بيانات مع timeout ومعالجة الأخطاء
+  const fetchWithTimeout = async (url: string, timeout = 10000): Promise<Response> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`انتهت مهلة تحميل ${url} (${timeout}ms)`);
+      }
+      throw error;
+    }
+  };
+
+  // وظيفة مساعدة لتحميل وتحليل ملف JSON مع معالجة الأخطاء الشاملة
+  const loadJSONFile = async <T>(
+    url: string, 
+    fileName: string, 
+    requiredFields: string[] = [],
+    defaultValue: T,
+    timeout = 10000
+  ): Promise<{ data: T; hasError: boolean; error?: string }> => {
+    try {
+      console.log(`🔄 تحميل ${fileName}...`);
+      
+      const response = await fetchWithTimeout(url, timeout);
+      
+      // فحص حالة الاستجابة
+      if (!response.ok) {
+        const errorMsg = `${fileName}: HTTP ${response.status} - ${response.statusText}`;
+        console.error(`❌ ${errorMsg}`);
+        return { data: defaultValue, hasError: true, error: errorMsg };
+      }
+
+      // فحص نوع المحتوى
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const errorMsg = `${fileName}: نوع المحتوى غير صحيح (${contentType})`;
+        console.warn(`⚠️ ${errorMsg}`);
+        return { data: defaultValue, hasError: true, error: errorMsg };
+      }
+
+      // تحليل JSON
+      let jsonData: T;
+      try {
+        const text = await response.text();
+        if (!text.trim()) {
+          const errorMsg = `${fileName}: الملف فارغ`;
+          console.warn(`⚠️ ${errorMsg}`);
+          return { data: defaultValue, hasError: true, error: errorMsg };
+        }
+        
+        jsonData = JSON.parse(text);
+        console.log(`✅ تم تحميل ${fileName} بنجاح`);
+      } catch (parseError) {
+        const errorMsg = `${fileName}: خطأ في تحليل JSON - ${parseError}`;
+        console.error(`❌ ${errorMsg}`);
+        return { data: defaultValue, hasError: true, error: errorMsg };
+      }
+
+      // فحص صحة البيانات
+      if (!validateJSON(jsonData, fileName, requiredFields)) {
+        const errorMsg = `${fileName}: البيانات غير صالحة`;
+        console.warn(`⚠️ ${errorMsg}`);
+        return { data: defaultValue, hasError: true, error: errorMsg };
+      }
+
+      return { data: jsonData, hasError: false };
+      
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : `خطأ غير معروف في ${fileName}`;
+      console.error(`❌ ${errorMsg}`);
+      return { data: defaultValue, hasError: true, error: errorMsg };
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -49,114 +153,238 @@ const App: React.FC = () => {
         
         console.log('📡 بدء تحميل البيانات...');
         
-        const [settingsResponse, postsResponse, categoriesResponse, profileResponse] = await Promise.all([
-          fetch(`/settings.json?v=${new Date().getTime()}`),
-          fetch(`/posts.json?v=${new Date().getTime()}`),
-          fetch(`/categories.json?v=${new Date().getTime()}`),
-          fetch(`/profile.json?v=${new Date().getTime()}`),
+        const timestamp = new Date().getTime();
+        
+        // تحميل البيانات مع timeout ومعالجة أخطاء منفصلة
+        const [
+          settingsResult,
+          postsResult, 
+          categoriesResult,
+          profileResult
+        ] = await Promise.all([
+          loadJSONFile(
+            `/settings.json?v=${timestamp}`,
+            'إعدادات الموقع',
+            ['identity', 'colors', 'socials'],
+            {
+              identity: {
+                logoUrl: '',
+                siteName: 'techtouch تقنية',
+                announcementText: 'أهلا بكم في موقع techtouch',
+                announcementLink: 'https://t.me/techtouch7',
+                announcementLabel: 'إعلان',
+                announcementBgColor: '#1f2937',
+                announcementTextColor: '#FFFFFF'
+              },
+              colors: {
+                header: '#1f2937',
+                card: 'rgba(31, 41, 55, 0.5)',
+                primary: '#ef4444',
+                primaryHover: '#ef4444CC',
+                primaryFocus: '#ef4444B3',
+                siteName: '#FFFFFF',
+                cardTitle: '#FFFFFF',
+                cardDescription: '#D1D5DB'
+              },
+              socials: {
+                telegram: 'https://t.me/techtouch7'
+              }
+            }
+          ),
+          loadJSONFile(
+            `/posts.json?v=${timestamp}`,
+            'المقالات',
+            ['posts'],
+            { posts: [] }
+          ),
+          loadJSONFile(
+            `/categories.json?v=${timestamp}`,
+            'التصنيفات',
+            ['categories'],
+            { categories: [] }
+          ),
+          loadJSONFile(
+            `/profile.json?v=${timestamp}`,
+            'الملف الشخصي',
+            [],
+            {
+              name: 'كنان الصائغ',
+              bio: 'مطور ويب متخصص في التقنية',
+              avatar: '',
+              email: '',
+              website: '',
+              social: {}
+            },
+            5000 // timeout أقصر للملف الشخصي
+          )
         ]);
 
-        // فحص حالة كل استجابة
-        const responses = [
-          { name: 'settings', response: settingsResponse },
-          { name: 'posts', response: postsResponse },
-          { name: 'categories', response: categoriesResponse },
-          { name: 'profile', response: profileResponse }
-        ];
+        // جمع الأخطاء
+        const allErrors = [
+          settingsResult.hasError ? settingsResult.error : null,
+          postsResult.hasError ? postsResult.error : null,
+          categoriesResult.hasError ? categoriesResult.error : null,
+          profileResult.hasError ? profileResult.error : null
+        ].filter(Boolean);
 
-        for (const { name, response } of responses) {
-          console.log(`📄 ${name}:`, response.status, response.statusText);
-          
-          if (!response.ok) {
-            console.error(`❌ فشل تحميل ${name}:`, response.status);
-            throw new Error(`فشل تحميل ملف ${name}.json`);
-          }
-          
-          // فحص نوع المحتوى
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            console.warn(`⚠️ نوع محتوى ${name} غير JSON:`, contentType);
-          }
+        if (allErrors.length > 0) {
+          console.warn('⚠️ بعض الملفات فشل تحميلها:', allErrors);
         }
 
-        // تحميل وتحليل JSON
-        const settingsData = await settingsResponse.json();
-        const postsData = await postsResponse.json();
-        const categoriesData = await categoriesResponse.json();
-        const profileData = await profileResponse.json();
-        
-        console.log('✅ تم تحميل البيانات بنجاح');
-        
+        // استخدام البيانات المحملة أو الافتراضية
+        const settingsData = settingsResult.data;
+        const postsData = postsResult.data;
+        const categoriesData = categoriesResult.data;
+        const profileData = profileResult.data;
+
+        // استخراج البيانات من الإعدادات
         const identity = settingsData.identity || {};
         const colors = settingsData.colors;
         const socials = settingsData.socials;
 
+        // التحقق من صحة البيانات الأساسية
+        const posts = Array.isArray(postsData.posts) ? postsData.posts : [];
+        const categories = Array.isArray(categoriesData.categories) ? categoriesData.categories : [];
+
+        // إعداد بيانات التطبيق
         setAppData({
-          posts: postsData.posts || [],
+          posts: posts.map((post: any) => ({
+            ...post,
+            // التأكد من وجود الحقول المطلوبة
+            title: post.title || 'مقال بدون عنوان',
+            description: post.description || 'لا توجد وصف متاح',
+            content: post.content || '',
+            slug: post.slug || `post-${post.id || Date.now()}`,
+            category: post.category || 'عام'
+          })),
           logoUrl: identity.logoUrl || '',
           siteName: identity.siteName || 'techtouch تقنية',
-          announcementText: identity.announcementText || '',
-          announcementLink: identity.announcementLink,
+          announcementText: identity.announcementText || 'أهلا بكم في موقع techtouch',
+          announcementLink: identity.announcementLink || 'https://t.me/techtouch7',
           announcementLabel: identity.announcementLabel || 'إعلان',
-          announcementBgColor: identity.announcementBgColor || 'var(--color-header-bg)',
-          announcementTextColor: identity.announcementTextColor,
-          colors: colors,
-          socials: socials,
-          profile: profileData,
-        });
-        setCategories(categoriesData.categories || []);
-
-        // تطبيق الألوان
-        if (colors) {
-          const root = document.documentElement;
-          const primaryColor = colors.primary || '#ef4444';
-          root.style.setProperty('--color-header-bg', colors.header || '#1f2937');
-          root.style.setProperty('--color-card-bg', colors.card || 'rgba(31, 41, 55, 0.5)');
-          root.style.setProperty('--color-primary', primaryColor);
-          root.style.setProperty('--color-primary-hover', `${primaryColor}CC`);
-          root.style.setProperty('--color-primary-focus', `${primaryColor}B3`);
-          root.style.setProperty('--color-site-name', colors.siteName || '#FFFFFF');
-          root.style.setProperty('--color-card-title', colors.cardTitle || '#FFFFFF');
-          root.style.setProperty('--color-card-description', colors.cardDescription || '#D1D5DB');
-        }
-
-        console.log('🎉 تم تحميل جميع البيانات بنجاح!');
-
-      } catch (err) {
-        console.error('❌ خطأ في تحميل البيانات:', err);
-        
-        // في حالة الخطأ، استخدم بيانات افتراضية
-        console.log('🔄 استخدام بيانات افتراضية...');
-        
-        setAppData({
-          posts: [],
-          logoUrl: '',
-          siteName: 'techtouch تقنية',
-          announcementText: 'أهلا بكم في موقع techtouch',
-          announcementLink: 'https://t.me/techtouch7',
-          announcementLabel: 'إعلان',
-          announcementBgColor: '#1f2937',
-          colors: {
+          announcementBgColor: identity.announcementBgColor || '#1f2937',
+          announcementTextColor: identity.announcementTextColor || '#FFFFFF',
+          colors: colors || {
             header: '#1f2937',
             card: 'rgba(31, 41, 55, 0.5)',
             primary: '#ef4444'
           },
-          socials: {
-            telegram: 'https://t.me/techtouch7'
-          },
-          profile: {
+          socials: socials || { telegram: 'https://t.me/techtouch7' },
+          profile: profileData || {
             name: 'كنان الصائغ',
             bio: 'مطور ويب متخصص في التقنية'
           }
         });
-        setCategories([]);
-        
-        // تعيين خطأ فقط إذا كان خطأ حقيقي (وليس مجرد ملف فارغ)
-        if (err instanceof Error && err.message.includes('fetch')) {
-          setError('فشل في تحميل البيانات. سيتم عرض البيانات الأساسية.');
-        } else {
-          setError(null); // لا تعرض خطأ إذا كان يمكن استخدام البيانات الافتراضية
+
+        // إعداد التصنيفات
+        setCategories(categories.map((cat: any) => ({
+          ...cat,
+          title: cat.title || 'تصنيف بدون اسم',
+          id: cat.id || `cat-${Date.now()}`
+        })));
+
+        // تطبيق الألوان المخصصة
+        if (colors) {
+          try {
+            const root = document.documentElement;
+            const primaryColor = colors.primary || '#ef4444';
+            
+            root.style.setProperty('--color-header-bg', colors.header || '#1f2937');
+            root.style.setProperty('--color-card-bg', colors.card || 'rgba(31, 41, 55, 0.5)');
+            root.style.setProperty('--color-primary', primaryColor);
+            root.style.setProperty('--color-primary-hover', `${primaryColor}CC`);
+            root.style.setProperty('--color-primary-focus', `${primaryColor}B3`);
+            root.style.setProperty('--color-site-name', colors.siteName || '#FFFFFF');
+            root.style.setProperty('--color-card-title', colors.cardTitle || '#FFFFFF');
+            root.style.setProperty('--color-card-description', colors.cardDescription || '#D1D5DB');
+            
+            console.log('🎨 تم تطبيق الألوان المخصصة بنجاح');
+          } catch (colorError) {
+            console.warn('⚠️ فشل في تطبيق الألوان:', colorError);
+          }
         }
+
+        // تقرير النتائج
+        const successCount = [settingsResult, postsResult, categoriesResult, profileResult]
+          .filter(result => !result.hasError).length;
+        
+        if (successCount === 4) {
+          console.log('🎉 تم تحميل جميع البيانات بنجاح!');
+        } else {
+          console.log(`📊 تم تحميل ${successCount}/4 ملفات بنجاح`);
+        }
+
+        // تحديد رسالة الخطأ إذا كانت هناك أخطاء خطيرة
+        if (allErrors.length > 0 && (allErrors.length >= 3 || postsResult.hasError)) {
+          setError('فشل في تحميل بعض البيانات الأساسية. سيتم عرض البيانات المتاحة.');
+        }
+
+      } catch (err) {
+        console.error('❌ خطأ عام في تحميل البيانات:', err);
+        
+        // في حالة خطأ عام، استخدم بيانات افتراضية شاملة
+        console.log('🔄 استخدام بيانات افتراضية شاملة...');
+        
+        setAppData({
+          posts: [
+            {
+              id: 1,
+              title: 'مرحبا بكم في موقع techtouch',
+              description: 'موقع متخصص في التقنية والبرمجة',
+              content: '<p>هذا محتوى تجريبي. سيتم تحميل المحتوى الحقيقي قريباً.</p>',
+              slug: 'welcome-post',
+              category: 'عام',
+              date: new Date().toISOString(),
+              tags: ['ترحيب'],
+              image: ''
+            }
+          ],
+          logoUrl: '',
+          siteName: 'techtouch تقنية',
+          announcementText: 'أهلا بكم في موقع techtouch - موقعكم الأول للتقنية',
+          announcementLink: 'https://t.me/techtouch7',
+          announcementLabel: 'تواصل معنا',
+          announcementBgColor: '#1f2937',
+          announcementTextColor: '#FFFFFF',
+          colors: {
+            header: '#1f2937',
+            card: 'rgba(31, 41, 55, 0.5)',
+            primary: '#ef4444',
+            primaryHover: '#ef4444CC',
+            primaryFocus: '#ef4444B3',
+            siteName: '#FFFFFF',
+            cardTitle: '#FFFFFF',
+            cardDescription: '#D1D5DB'
+          },
+          socials: {
+            telegram: 'https://t.me/techtouch7',
+            github: '',
+            twitter: '',
+            linkedin: ''
+          },
+          profile: {
+            name: 'كنان الصائغ',
+            bio: 'مطور ويب متخصص في التقنيات الحديثة مثل React, TypeScript, و Node.js. أساعد في بناء تطبيقات ويب مبتكرة وحلول تقنية متقدمة.',
+            avatar: '',
+            email: 'info@techtouch.com',
+            website: 'https://techtouch.com',
+            social: {
+              telegram: 'https://t.me/techtouch7',
+              github: '',
+              twitter: '',
+              linkedin: ''
+            }
+          }
+        });
+        setCategories([
+          { id: 'general', title: 'عام' },
+          { id: 'programming', title: 'برمجة' },
+          { id: 'technology', title: 'تقنية' },
+          { id: 'tutorials', title: 'دروس' }
+        ]);
+        
+        setError('فشل في تحميل البيانات. يتم عرض بيانات تجريبية.');
+        
       } finally {
         setLoading(false);
       }

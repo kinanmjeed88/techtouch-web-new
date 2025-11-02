@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SearchIcon, GridIcon, SparklesIcon } from './Icons';
 import AppCard, { App } from './AppCard';
-import SearchFilters from './SearchFilters';
 import { embeddedAppsData } from './EmbeddedData';
 
 interface Category {
@@ -19,10 +18,10 @@ interface AppsData {
 const AppsSearch: React.FC = () => {
   const [appsData, setAppsData] = useState<AppsData | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredApps, setFilteredApps] = useState<App[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAllApps, setShowAllApps] = useState(false);
 
   // تحميل قاعدة البيانات مع معالجة أفضل للأخطاء
   useEffect(() => {
@@ -129,7 +128,7 @@ const AppsSearch: React.FC = () => {
       let isMatch = false;
       let matchScore = 0;
       
-      // 1. البحث بالاسم (أعلى درجة مطابقة)
+      // 1. البحث بالاسم (أعلى درجة مطابقة) مع دعم أسماء متنوعة
       const appNameLower = app.name.toLowerCase();
       const appNameArLower = app.nameAr.toLowerCase();
       const queryLower = query.toLowerCase();
@@ -143,15 +142,39 @@ const AppsSearch: React.FC = () => {
         matchScore += 80; // درجة عالية
       }
       
-      // البحث بكلمات منفردة
+      // البحث بالأسطورة والإسطورة - دعم جميع الصيغ
+      if ((queryLower.includes('أسطورة') || queryLower.includes('إسطورة')) && 
+          (appNameLower.includes('أسطورة') || appNameArLower.includes('أسطورة'))) {
+        isMatch = true;
+        matchScore += 90; // درجة عالية جداً للأسطورة
+      }
+      
+      // البحث بسينمانا وجميع صيغ السينما
+      if ((queryLower.includes('سينمانا') || queryLower.includes('سينما') || queryLower.includes('cine')) && 
+          (appNameLower.includes('cinema') || appNameArLower.includes('سينما') || 
+           app.keywords.some(k => k.toLowerCase().includes('cinema') || k.toLowerCase().includes('سينمانا')))) {
+        isMatch = true;
+        matchScore += 85; // درجة عالية جداً للسينما
+      }
+      
+      // البحث بكلمات منفردة مع تحسين الحساسية
       for (const term of searchTerms) {
         if (appNameLower.includes(term) || appNameArLower.includes(term)) {
           isMatch = true;
           matchScore += 60;
         }
+        
+        // البحث بكلمات مشابهة ومتقاربة
+        const similarTerms = getSimilarTerms(term);
+        similarTerms.forEach(similarTerm => {
+          if (appNameLower.includes(similarTerm) || appNameArLower.includes(similarTerm)) {
+            isMatch = true;
+            matchScore += 45;
+          }
+        });
       }
       
-      // 2. البحث بالكلمات المفتاحية
+      // 2. البحث بالكلمات المفتاحية مع مصطلحات ذكية محسنة
       app.keywords.forEach(keyword => {
         const keywordLower = keyword.toLowerCase();
         if (keywordLower.includes(queryLower) || queryLower.includes(keywordLower)) {
@@ -165,6 +188,36 @@ const AppsSearch: React.FC = () => {
             isMatch = true;
             matchScore += 40;
           }
+          
+          // البحث بالكلمات المشابهة في الكلمات المفتاحية
+          const similarTerms = getSimilarTerms(term);
+          similarTerms.forEach(similarTerm => {
+            if (keywordLower.includes(similarTerm) || similarTerm.includes(keywordLower)) {
+              isMatch = true;
+              matchScore += 35;
+            }
+          });
+        }
+        
+        // بحث إضافي للأسطورة والإسطورة
+        if ((queryLower.includes('أسطورة') || queryLower.includes('إسطورة')) && 
+            (keywordLower.includes('أسطورة') || keywordLower.includes('قناة') || keywordLower.includes('موقع'))) {
+          isMatch = true;
+          matchScore += 55;
+        }
+        
+        // بحث إضافي لسينمانا
+        if ((queryLower.includes('سينمانا') || queryLower.includes('سينما')) && 
+            (keywordLower.includes('cinema') || keywordLower.includes('cine') || keywordLower.includes('movie'))) {
+          isMatch = true;
+          matchScore += 55;
+        }
+        
+        // بحث إضافي للواتساب
+        if ((queryLower.includes('واتساب') || queryLower.includes('whatsapp')) && 
+            (keywordLower.includes('whatsapp') || keywordLower.includes('واتساب') || keywordLower.includes('message'))) {
+          isMatch = true;
+          matchScore += 55;
         }
       });
       
@@ -200,45 +253,99 @@ const AppsSearch: React.FC = () => {
     });
   };
   
-  // البحث الذكي حسب السياق
+  // الحصول على الكلمات المشابهة والتقريبية
+  const getSimilarTerms = (term: string): string[] => {
+    const termLower = term.toLowerCase();
+    const similarTerms: string[] = [];
+
+    // الكلمات المشابهة للأسطورة
+    if (termLower.includes('أسطورة') || termLower.includes('إسطورة')) {
+      similarTerms.push('الأسطورة', 'الإسطورة', 'قناة الأسطورة', 'موقع الأسطورة');
+    }
+
+    // الكلمات المشابهة للسينما
+    if (termLower.includes('سينما') || termLower.includes('cine')) {
+      similarTerms.push('سينمانا', 'CineBooo', 'أفلام', 'مسلسلات');
+    }
+
+    // الكلمات المشابهة للواتساب
+    if (termLower.includes('واتساب') || termLower.includes('whatsapp')) {
+      similarTerms.push('WhatsApp GB', 'WhatsApp Plus', 'واتساب الذهبي', 'واتساب بلس');
+    }
+
+    // الكلمات المشابهة للرياضة
+    if (termLower.includes('رياضة') || termLower.includes('football')) {
+      similarTerms.push('كورة', 'مباريات', 'sport', 'soccer');
+    }
+
+    // الكلمات المشابهة للألعاب
+    if (termLower.includes('لعبة') || termLower.includes('game')) {
+      similarTerms.push('فايف', 'فيفا', 'PUBG', 'Free Fire');
+    }
+
+    return [...new Set(similarTerms)];
+  };
+
+  // البحث الذكي المحسن حسب السياق مع دعم الأسماء المتنوعة
   const checkContextualMatch = (query: string, app: App): boolean => {
     const queryLower = query.toLowerCase();
     
-    // البحث بالرياضة
+    // البحث بالرياضة - يغطي جميع صيغ البحث
     if (queryLower.includes('رياضة') || queryLower.includes('كورة') || queryLower.includes('مباريات') || 
-        queryLower.includes('football') || queryLower.includes('soccer') || queryLower.includes('sport')) {
+        queryLower.includes('football') || queryLower.includes('soccer') || queryLower.includes('sport') ||
+        queryLower.includes('بري') || queryLower.includes('football')) {
       return app.keywords.some(k => k.toLowerCase().includes('sport') || k.toLowerCase().includes('football') || 
-                                   k.toLowerCase().includes('soccer') || k.toLowerCase().includes('كرة'));
+                                   k.toLowerCase().includes('soccer') || k.toLowerCase().includes('كرة') ||
+                                   k.toLowerCase().includes('رياضة'));
     }
     
-    // البحث بالأفلام والمسلسلات
+    // البحث بالأفلام والمسلسلات - يشمل سينمانا وجميع المصطلحات
     if (queryLower.includes('أفلام') || queryLower.includes('مسلسلات') || queryLower.includes('سينما') ||
-        queryLower.includes('movies') || queryLower.includes('series') || queryLower.includes('cinema')) {
-      return app.category === 'movies' || app.keywords.some(k => k.toLowerCase().includes('movie') || 
-                                                                  k.toLowerCase().includes('cinema') ||
-                                                                  k.toLowerCase().includes('أفلام'));
+        queryLower.includes('سينمانا') || queryLower.includes('cine') || queryLower.includes('cinema') ||
+        queryLower.includes('movie') || queryLower.includes('series')) {
+      return app.category === 'movies' || 
+             app.keywords.some(k => k.toLowerCase().includes('movie') || 
+                                   k.toLowerCase().includes('cinema') ||
+                                   k.toLowerCase().includes('أفلام') ||
+                                   k.toLowerCase().includes('سينمانا') ||
+                                   k.toLowerCase().includes('cine'));
     }
     
     // البحث بالذكاء الاصطناعي
-    if (queryLower.includes('ذكاء') || queryLower.includes('ai') || queryLower.includes('ذكي')) {
+    if (queryLower.includes('ذكاء') || queryLower.includes('ai') || queryLower.includes('ذكي') ||
+        queryLower.includes('artificial') || queryLower.includes('machine')) {
       return app.category === 'ai_apps' || app.keywords.some(k => k.toLowerCase().includes('ai') || 
-                                                                   k.toLowerCase().includes('ذكاء'));
+                                                                   k.toLowerCase().includes('ذكاء') ||
+                                                                   k.toLowerCase().includes('ذكاء اصطناعي'));
     }
     
-    // البحث بالتطبيقات المحدثة
+    // البحث بالتطبيقات المحدثة - يغطي جميع الصيغ
     if (queryLower.includes('محدثة') || queryLower.includes('معدلة') || queryLower.includes('ذهبي') ||
-        queryLower.includes('modified') || queryLower.includes('gold')) {
+        queryLower.includes('modified') || queryLower.includes('gold') || queryLower.includes('plus') ||
+        queryLower.includes('بريميوم') || queryLower.includes('بلك')) {
       return app.category === 'modified_apps' || app.keywords.some(k => k.toLowerCase().includes('modified') || 
                                                                           k.toLowerCase().includes('gold') ||
-                                                                          k.toLowerCase().includes('محدثة'));
+                                                                          k.toLowerCase().includes('محدثة') ||
+                                                                          k.toLowerCase().includes('بلك') ||
+                                                                          k.toLowerCase().includes('plus'));
     }
     
-    // البحث بالبث
+    // البحث بالبث - يشمل IPTV والبث المباشر
     if (queryLower.includes('بث') || queryLower.includes('iptv') || queryLower.includes('تلفزيون') ||
-        queryLower.includes('live') || queryLower.includes('streaming')) {
+        queryLower.includes('live') || queryLower.includes('streaming') || queryLower.includes('tv') ||
+        queryLower.includes('قناة')) {
       return app.category === 'iptv' || app.keywords.some(k => k.toLowerCase().includes('iptv') || 
                                                                k.toLowerCase().includes('live') ||
-                                                               k.toLowerCase().includes('streaming'));
+                                                               k.toLowerCase().includes('streaming') ||
+                                                               k.toLowerCase().includes('بث'));
+    }
+    
+    // البحث بالأسطورة/الإسطورة - جميع الصيغ والكتابات
+    if (queryLower.includes('أسطورة') || queryLower.includes('إسطورة') || queryLower.includes('الأسطورة') || 
+        queryLower.includes('الأسطورة') || queryLower.includes('قناة الأسطورة') || queryLower.includes('موقع الأسطورة')) {
+      return app.keywords.some(k => k.toLowerCase().includes('أسطورة') || 
+                                   k.toLowerCase().includes('قناة الأسطورة') ||
+                                   k.toLowerCase().includes('موقع الأسطورة'));
     }
     
     // البحث بتطبيقات الياسين
@@ -246,28 +353,80 @@ const AppsSearch: React.FC = () => {
       return app.keywords.some(k => k.toLowerCase().includes('ياسين') || k.toLowerCase().includes('yassin'));
     }
     
+    // البحث بالألعاب - يشمل جميع أنواع الألعاب
+    if (queryLower.includes('لعبة') || queryLower.includes('game') || queryLower.includes('فايف') ||
+        queryLower.includes('فيفا') || queryLower.includes('pubg') || queryLower.includes('free fire')) {
+      return app.keywords.some(k => k.toLowerCase().includes('game') || 
+                                   k.toLowerCase().includes('لعبة') ||
+                                   k.toLowerCase().includes('فايف') ||
+                                   k.toLowerCase().includes('فيفا') ||
+                                   k.toLowerCase().includes('pubg'));
+    }
+    
+    // البحث باليوتيوب والتطبيقات المشابهة
+    if (queryLower.includes('يوتيوب') || queryLower.includes('youtube') || queryLower.includes('فيديو') ||
+        queryLower.includes('video') || queryLower.includes('مشاهدة')) {
+      return app.keywords.some(k => k.toLowerCase().includes('youtube') || 
+                                   k.toLowerCase().includes('فيديو') ||
+                                   k.toLowerCase().includes('video'));
+    }
+    
     return false;
   };
 
-  // تطبيق البحث والفلترة
+  // تطبيق البحث الذكي
   useEffect(() => {
     if (appsData) {
-      const results = performAISearch(searchQuery, appsData.apps, selectedCategory);
+      const results = performAISearch(searchQuery, appsData.apps);
       setFilteredApps(results);
     }
-  }, [searchQuery, selectedCategory, appsData]);
+  }, [searchQuery, showAllApps, appsData]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setShowAllApps(false);
   };
 
-  const handleClearFilters = () => {
-    setSelectedCategory('all');
+  const handleShowAllApps = () => {
+    setShowAllApps(true);
     setSearchQuery('');
+  };
+
+  // اقتراحات البحث الذكية
+  const getSearchSuggestions = (query: string): string[] => {
+    const suggestions: string[] = [];
+    const queryLower = query.toLowerCase();
+
+    // أسماء متنوعة للأسطورة/الإسطورة
+    if (queryLower.includes('أسطورة') || queryLower.includes('إسطورة') || queryLower.includes('الأسطورة') || queryLower.includes('الإسطورة')) {
+      suggestions.push('الأسطورة', 'الإسطورة', 'قناه الأسطورة', 'موقع الأسطورة');
+    }
+
+    // سينمانا ومصطلحات الأفلام
+    if (queryLower.includes('سينمانا') || queryLower.includes('cine') || queryLower.includes('سينما')) {
+      suggestions.push('سينمانا', 'CineBooo', 'أفلام', 'مسلسلات', 'Netflix', 'WatchBox');
+    }
+
+    // واتساب ومتنوعاته
+    if (queryLower.includes('واتساب') || queryLower.includes('whatsapp')) {
+      suggestions.push('WhatsApp GB', 'WhatsApp Plus', 'واتساب الذهبي', 'واتساب بلس');
+    }
+
+    // اليوتيوب
+    if (queryLower.includes('يوتيوب') || queryLower.includes('youtube')) {
+      suggestions.push('YouTube Premium', 'YouTube Music', 'YouTube Vanced', 'يوتيوب البلس');
+    }
+
+    // الألعاب
+    if (queryLower.includes('لعبة') || queryLower.includes('game') || queryLower.includes('فايف')) {
+      suggestions.push('PUBG Mobile', 'Free Fire', 'Call of Duty', 'FIFA Mobile', 'فايف ستايت');
+    }
+
+    return [...new Set(suggestions)];
   };
 
   const handleAppSelect = (app: App) => {
@@ -319,32 +478,61 @@ const AppsSearch: React.FC = () => {
         <p className="text-gray-400 text-lg">
           ابحث عن أي تطبيق تريده بذكاء اصطناعي متقدم - 90 تطبيق متاح
         </p>
+        <p className="text-gray-500 text-sm mt-2">
+          البحث الذكي يدعم الأسماء المختلفة: الأسطورة، الإسطورة، سينمانا، والمزيد
+        </p>
       </div>
 
-      {/* شريط البحث */}
+      {/* شريط البحث المحسن */}
       <div className="mb-8">
-        <div className="relative max-w-2xl mx-auto">
+        <div className="relative max-w-2xl mx-auto mb-6">
           <SearchIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="ابحث عن التطبيق... (مثال: واتساب، أفلام، رياضة، ذكاء اصطناعي)"
+            placeholder="ابحث عن التطبيق... (مثال: الأسطورة، سينمانا، واتساب، أفلام، رياضة)"
             className="w-full pr-12 pl-4 py-4 rounded-lg bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300"
             style={{ direction: 'rtl' }}
           />
+          {searchQuery && (
+            <button
+              onClick={handleClearSearch}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+          )}
         </div>
-      </div>
 
-      {/* الفلترة */}
-      {appsData && (
-        <SearchFilters
-          categories={appsData.categories}
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
-          onClearFilters={handleClearFilters}
-        />
-      )}
+        {/* زر عرض جميع التطبيقات */}
+        <div className="text-center">
+          <button
+            onClick={handleShowAllApps}
+            className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-300 text-sm"
+          >
+            عرض جميع التطبيقات ({appsData?.apps.length || 0})
+          </button>
+        </div>
+
+        {/* اقتراحات البحث */}
+        {searchQuery && (
+          <div className="max-w-2xl mx-auto mt-4">
+            <div className="text-sm text-gray-400 mb-2">هل تقصد:</div>
+            <div className="flex flex-wrap gap-2">
+              {getSearchSuggestions(searchQuery).map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSearchQuery(suggestion)}
+                  className="px-3 py-1 bg-gray-700 hover:bg-red-500 text-white text-xs rounded-full transition-colors duration-300"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* عدد النتائج */}
       <div className="flex items-center justify-between mb-6">
@@ -353,14 +541,19 @@ const AppsSearch: React.FC = () => {
           <span className="font-semibold">
             {filteredApps.length} {filteredApps.length === 1 ? 'تطبيق' : 'تطبيقات'}
           </span>
+          {searchQuery && (
+            <span className="text-sm text-gray-500">
+              نتائج البحث عن: "{searchQuery}"
+            </span>
+          )}
         </div>
         
-        {(searchQuery || selectedCategory !== 'all') && (
+        {(searchQuery || showAllApps) && (
           <button
-            onClick={handleClearFilters}
+            onClick={handleClearSearch}
             className="text-sm text-red-400 hover:text-red-300 transition-colors duration-300"
           >
-            مسح جميع الفلترة
+            مسح البحث
           </button>
         )}
       </div>
@@ -370,7 +563,21 @@ const AppsSearch: React.FC = () => {
         <div className="text-center py-20">
           <div className="text-6xl mb-4">🔍</div>
           <p className="text-xl text-gray-400 mb-2">لم نجد أي تطبيقات مطابقة</p>
-          <p className="text-gray-500">جرب كلمات بحث مختلفة أو امسح الفلترة</p>
+          <p className="text-gray-500 mb-4">جرب كلمات بحث مختلفة مثل: الأسطورة، سينمانا، واتساب بلس</p>
+          <div className="text-sm text-gray-600">
+            <p className="mb-2">اقتراحات للبحث:</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {['الأسطورة', 'سينمانا', 'واتساب', 'يوتيوب', 'أفلام', 'رياضة', 'ألعاب'].map((term) => (
+                <button
+                  key={term}
+                  onClick={() => setSearchQuery(term)}
+                  className="px-3 py-1 bg-gray-700 hover:bg-red-500 text-white text-xs rounded-full transition-colors duration-300"
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
