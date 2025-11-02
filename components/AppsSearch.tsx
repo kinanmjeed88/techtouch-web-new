@@ -28,15 +28,29 @@ const AppsSearch: React.FC = () => {
     const loadApps = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+        console.log('🔍 جاري تحميل قاعدة البيانات...');
+        
         const response = await fetch('/data/apps_database.json');
+        console.log('📡 حالة الاستجابة:', response.status, response.statusText);
+        
         if (!response.ok) {
-          throw new Error('فشل تحميل قاعدة البيانات');
+          const errorText = await response.text();
+          console.error('❌ نص الخطأ:', errorText);
+          throw new Error(`فشل تحميل قاعدة البيانات: ${response.status} ${response.statusText}`);
         }
+        
+        const contentType = response.headers.get('content-type');
+        console.log('📄 نوع المحتوى:', contentType);
+        
         const data: AppsData = await response.json();
+        console.log('✅ تم تحميل البيانات بنجاح:', data.apps.length, 'تطبيق');
+        
         setAppsData(data);
         setFilteredApps(data.apps);
         setIsLoading(false);
       } catch (err) {
+        console.error('❌ خطأ في تحميل البيانات:', err);
         setError(err instanceof Error ? err.message : 'حدث خطأ غير معروف');
         setIsLoading(false);
       }
