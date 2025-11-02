@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import AIChat from './AIChat';
-import GeminiImageGenerator from './GeminiImageGenerator';
+import CloudflareImageGenerator from './CloudflareImageGenerator';
 import { ChatBubbleIcon, ImageIcon } from './Icons';
 
 // A map to store component references and their metadata.
@@ -11,10 +11,10 @@ const toolComponents = {
     description: 'تحدث مع Gemini لطرح الأسئلة والحصول على إجابات.',
     icon: <ChatBubbleIcon className="w-8 h-8 text-red-400" />,
   },
-  geminiImage: {
-    Component: GeminiImageGenerator,
-    title: 'مولّد الصور (Gemini)',
-    description: 'أنشئ صوراً باستخدام نموذج Imagen من Gemini.',
+  cloudflareImage: {
+    Component: CloudflareImageGenerator,
+    title: 'مولّد الصور (Cloudflare)',
+    description: 'أنشئ صوراً باستخدام نموذج Flux من Cloudflare AI.',
     icon: <ImageIcon className="w-8 h-8 text-red-400" />,
   },
 };
