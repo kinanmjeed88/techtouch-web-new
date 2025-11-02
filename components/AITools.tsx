@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import AIChat from './AIChat';
 import AppsSearch from './AppsSearch';
-import AdminPanel from './AdminPanel';
-import { ChatBubbleIcon, SearchIcon, CogIcon } from './Icons';
+import { ChatBubbleIcon, SearchIcon } from './Icons';
 
 // A map to store component references and their metadata.
 const toolComponents = {
@@ -15,14 +14,8 @@ const toolComponents = {
   appsSearch: {
     Component: AppsSearch,
     title: 'بحث التطبيقات بالذكاء الاصطناعي',
-    description: 'ابحث عن أي تطبيق تريده من بين 90 تطبيق بذكاء اصطناعي متقدم.',
+    description: 'ابحث عن أي تطبيق تريده من بين 140 تطبيق بذكاء اصطناعي متقدم.',
     icon: <SearchIcon className="w-8 h-8 text-red-400" />,
-  },
-  adminPanel: {
-    Component: AdminPanel,
-    title: 'لوحة تحكم الأدمن',
-    description: 'إدارة التطبيقات وقاعدة البيانات بسهولة.',
-    icon: <CogIcon className="w-8 h-8 text-red-400" />,
   },
 };
 
