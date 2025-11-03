@@ -9,6 +9,7 @@ import Pagination from './components/Pagination';
 import SkeletonLoader from './components/SkeletonLoader';
 import AITools from './components/AITools';
 import AINewsSection from './components/AINewsSection';
+import AINewsPage from './components/AINewsPage';
 import ProfileModal from './components/ProfileModal';
 import type { Category, Post, SiteSettings, Profile } from './types';
 
@@ -34,7 +35,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const [currentView, setCurrentView] = useState<'home' | 'postDetail' | 'aiTools'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'postDetail' | 'aiTools' | 'aiNews'>('home');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
@@ -418,6 +419,9 @@ const App: React.FC = () => {
       } else if (path === '/ai-tools') {
         setSelectedPost(null);
         setCurrentView('aiTools');
+      } else if (path === '/ai-news') {
+        setSelectedPost(null);
+        setCurrentView('aiNews');
       } else {
         setSelectedPost(null);
         setCurrentView('home');
@@ -453,6 +457,13 @@ const App: React.FC = () => {
     window.history.pushState({}, '', '/ai-tools');
     setSelectedPost(null);
     setCurrentView('aiTools');
+    window.scrollTo(0, 0);
+  };
+
+  const handleGoToAINews = () => {
+    window.history.pushState({}, '', '/ai-news');
+    setSelectedPost(null);
+    setCurrentView('aiNews');
     window.scrollTo(0, 0);
   };
 
@@ -494,7 +505,7 @@ const App: React.FC = () => {
       
       {loading ? <SkeletonLoader /> : filteredPosts.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {paginatedPosts.map((post, index) => (
               <PostCard 
                 key={post.id} 
@@ -530,7 +541,7 @@ const App: React.FC = () => {
   if (loading && !appData) {
     return (
        <div className="bg-gray-900 min-h-screen text-white">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
           <SkeletonLoader />
         </div>
       </div>
@@ -606,13 +617,14 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-gray-900 min-h-screen text-white">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
         <Header 
           onSearch={handleSearchChange} 
           logoUrl={appData.logoUrl} 
           siteName={appData.siteName}
           onLogoClick={() => setIsProfileModalOpen(true)}
           onGoToAITools={handleGoToAITools}
+          onGoToAINews={handleGoToAINews}
           currentView={currentView}
         />
         <AnnouncementBar 
@@ -623,7 +635,7 @@ const App: React.FC = () => {
           textColor={appData.announcementTextColor}
         />
 
-        <main className="mt-8">
+        <main className="mt-4 sm:mt-6 lg:mt-8">
           {currentView === 'postDetail' && selectedPost ? (
             <PostDetail 
                 post={selectedPost} 
@@ -634,6 +646,8 @@ const App: React.FC = () => {
             />
           ) : currentView === 'aiTools' ? (
             <AITools />
+          ) : currentView === 'aiNews' ? (
+            <AINewsPage onBack={handleGoHome} />
           ) : (
             renderHomeView()
           )}

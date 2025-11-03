@@ -1,5 +1,6 @@
 import React from 'react';
 import { SearchIcon } from './Icons';
+import { SparklesIcon } from './Icons';
 
 interface HeaderProps {
   onSearch: (query: string) => void;
@@ -7,55 +8,76 @@ interface HeaderProps {
   siteName: string;
   onLogoClick: () => void;
   onGoToAITools: () => void;
-  currentView: 'home' | 'postDetail' | 'aiTools';
+  onGoToAINews: () => void;
+  currentView: 'home' | 'postDetail' | 'aiTools' | 'aiNews';
 }
 
-const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onLogoClick, onGoToAITools, currentView }) => {
+const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onLogoClick, onGoToAITools, onGoToAINews, currentView }) => {
   return (
     <header 
-      className="flex flex-col items-center justify-center p-4 sm:p-6 rounded-lg shadow-lg"
+      className="flex flex-col items-center justify-center p-3 sm:p-6 rounded-lg shadow-lg"
       style={{ backgroundColor: 'var(--color-header-bg)' }}
     >
-      <button onClick={onLogoClick} className="flex items-center space-x-4 space-x-reverse mb-4 sm:mb-6 group cursor-pointer">
+      <button onClick={onLogoClick} className="flex items-center space-x-3 space-x-reverse mb-3 sm:mb-6 group cursor-pointer">
         {logoUrl && (
             <img
             src={logoUrl}
             alt="Site Logo"
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 animate-borderColorPulse transition-transform duration-300 group-hover:scale-105"
+            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full border-3 sm:border-4 animate-borderColorPulse transition-transform duration-300 group-hover:scale-105"
             style={{ borderColor: 'var(--color-primary)' }}
             />
         )}
         <h1 
-          className="text-3xl sm:text-4xl md:text-5xl font-bold transition-colors duration-300 group-hover:text-red-400 text-primary-hover"
+          className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold transition-colors duration-300 group-hover:text-red-400 text-primary-hover text-center"
           style={{ color: 'var(--color-site-name)' }}
         >
           {siteName}
         </h1>
       </button>
-      <div className="flex w-full max-w-lg items-center gap-2 sm:gap-3">
+      
+      {/* شريط البحث والأزرار */}
+      <div className="flex w-full max-w-2xl items-center gap-2 sm:gap-3">
         <div className="relative flex-grow">
           <input
             type="text"
             placeholder="ابحث عن منشور..."
             onChange={(e) => onSearch(e.target.value)}
-            className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-full py-2 sm:py-3 pr-10 sm:pr-12 pl-4 focus:outline-none focus:ring-2 ring-primary text-sm sm:text-base"
+            className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-full py-2 sm:py-3 pr-8 sm:pr-12 pl-3 sm:pl-4 focus:outline-none focus:ring-2 ring-primary text-xs sm:text-base"
             aria-label="Search posts"
           />
-          <div className="absolute top-1/2 right-3 sm:right-4 transform -translate-y-1/2">
+          <div className="absolute top-1/2 right-2 sm:right-4 transform -translate-y-1/2">
             <SearchIcon />
           </div>
         </div>
+        
+        {/* زر AI Tools */}
         <button 
           onClick={onGoToAITools} 
           title="AI Tools" 
           aria-label="AI Tools"
-          className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full transition-all duration-300 transform hover:scale-110 ${
+          className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full transition-all duration-300 transform hover:scale-110 ${
             currentView === 'aiTools' 
             ? 'btn-primary text-white shadow-lg' 
             : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
           }`}
         >
-          <span className="font-bold text-base sm:text-lg">AI</span>
+          <span className="font-bold text-xs sm:text-sm md:text-base">AI</span>
+        </button>
+        
+        {/* زر آخر أخبار الذكاء الاصطناعي */}
+        <button 
+          onClick={onGoToAINews} 
+          title="آخر أخبار الذكاء الاصطناعي" 
+          aria-label="آخر أخبار الذكاء الاصطناعي"
+          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-xs sm:text-sm font-medium ${
+            currentView === 'aiNews' 
+            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg' 
+            : 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 hover:from-purple-500/30 hover:to-blue-500/30 hover:text-white border border-purple-400/30'
+          }`}
+        >
+          <SparklesIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+          <span className="hidden xs:inline">أخبار AI</span>
+          <span className="xs:hidden">AI</span>
         </button>
       </div>
     </header>
