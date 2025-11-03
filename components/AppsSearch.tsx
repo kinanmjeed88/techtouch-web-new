@@ -8,15 +8,15 @@ const AppsSearch: React.FC = () => {
   // خريطة المرادفات للفئات
   const categorySynonyms: { [key: string]: string[] } = {
     modified: ['معدل', 'معدلة', 'ذهبي', 'ذهبية', 'gold', 'mod', 'plus', 'بلس', 'واتساب', 'whatsapp', 'انستقرام', 'instagram', 'تيك توك', 'tiktok', 'سناب', 'snap'],
-    iptv: ['بث', 'قنوات', 'تلفزيون', 'تلفاز', 'iptv', 'live', 'tv', 'channels'],
+    iptv: ['بث', 'قنوات', 'تلفزيون', 'تلفاز', 'iptv', 'live', 'tv', 'channels', 'بين سبورت', 'bein', 'yalla', 'kora'],
     movies: ['افلام', 'أفلام', 'مسلسلات', 'مسلسل', 'فيلم', 'سينما', 'مشاهدة', 'movies', 'series', 'cinema', 'سينمانا', 'cinemana', 'شاهد', 'watch'],
-    sports: ['رياضة', 'رياضه', 'الرياضية', 'رياضي', 'مباريات', 'مباراة', 'كورة', 'كرة', 'sports', 'match', 'football', 'soccer', 'يلا شوت', 'kora'],
+    sports: ['رياضة', 'رياضه', 'الرياضية', 'رياضي', 'مباريات', 'مباراة', 'كورة', 'كرة', 'sports', 'match', 'football', 'soccer', 'يلا شوت', 'kora', 'بين سبورت', 'bein'],
     design: ['تصميم', 'مونتاج', 'تعديل', 'صور', 'فيديو', 'design', 'edit', 'photo', 'video', 'فوتوشوب', 'photoshop'],
     ai: ['ذكاء', 'اصطناعي', 'ai', 'artificial', 'intelligence', 'chatgpt', 'جي بي تي'],
     tools: ['أدوات', 'ادوات', 'تطبيقات', 'عامة', 'tools', 'utilities', 'apps']
   };
   
-  // دالة البحث الذكي
+  // دالة البحث الذكي المحسنة
   const smartSearch = (query: string) => {
     if (!query.trim()) {
       return [];
@@ -24,6 +24,7 @@ const AppsSearch: React.FC = () => {
     
     const normalizedQuery = query.toLowerCase().trim();
     const results: any[] = [];
+    const addedIds = new Set<number>();
     
     // 1. البحث في أسماء التطبيقات مباشرة
     embeddedAppsData.apps.forEach(app => {
@@ -32,8 +33,9 @@ const AppsSearch: React.FC = () => {
       const keywords = [...(app.keywords_ar || []), ...(app.keywords_en || [])].join(' ').toLowerCase();
       
       if (nameAr.includes(normalizedQuery) || nameEn.includes(normalizedQuery) || keywords.includes(normalizedQuery)) {
-        if (!results.find(r => r.id === app.id)) {
+        if (!addedIds.has(app.id)) {
           results.push(app);
+          addedIds.add(app.id);
         }
       }
     });
@@ -50,10 +52,103 @@ const AppsSearch: React.FC = () => {
       if (isMatch) {
         // إضافة جميع التطبيقات من هذه الفئة
         embeddedAppsData.apps.forEach(app => {
-          if (app.category === categoryId && !results.find(r => r.id === app.id)) {
+          if (app.category === categoryId && !addedIds.has(app.id)) {
             results.push(app);
+            addedIds.add(app.id);
           }
         });
+        
+        // خاصة بالرياضة: إضافة تطبيقات IPTV الرياضية
+        if (categoryId === 'sports') {
+          embeddedAppsData.apps.forEach(app => {
+            if (app.category === 'iptv') {
+              const nameAr = app.name_ar?.toLowerCase() || '';
+              const nameEn = app.name_en?.toLowerCase() || '';
+              const keywords = [...(app.keywords_ar || []), ...(app.keywords_en || [])].join(' ').toLowerCase();
+              
+              const sportsRelated = nameAr + nameEn + keywords;
+              const isSportsRelated = sportsRelated.includes('yalla') || 
+                                     sportsRelated.includes('kora') ||
+                                     sportsRelated.includes('sport') ||
+                                     sportsRelated.includes('كورة') ||
+                                     sportsRelated.includes('رياضة') ||
+                                     sportsRelated.includes('live') ||
+                                     sportsRelated.includes('bein');
+              
+              if (isSportsRelated && !addedIds.has(app.id)) {
+                results.push(app);
+                addedIds.add(app.id);
+              }
+            }
+          });
+          
+          // إضافة تطبيقات tools المرتبطة بالرياضة (مثل سكورسوفت)
+          embeddedAppsData.apps.forEach(app => {
+            if (app.category === 'tools') {
+              const nameAr = app.name_ar?.toLowerCase() || '';
+              const nameEn = app.name_en?.toLowerCase() || '';
+              const keywords = [...(app.keywords_ar || []), ...(app.keywords_en || [])].join(' ').toLowerCase();
+              
+              const sportsRelated = nameAr + nameEn + keywords;
+              const isSportsRelated = sportsRelated.includes('score') ||
+                                     sportsRelated.includes('كورة') ||
+                                     sportsRelated.includes('رياضة') ||
+                                     sportsRelated.includes('sport');
+              
+              if (isSportsRelated && !addedIds.has(app.id)) {
+                results.push(app);
+                addedIds.add(app.id);
+              }
+            }
+          });
+        }
+        
+        // خاصة بالأفلام: إضافة التطبيقات المختلطة (movies + iptv)
+        if (categoryId === 'movies') {
+          embeddedAppsData.apps.forEach(app => {
+            if (app.category === 'iptv') {
+              const nameAr = app.name_ar?.toLowerCase() || '';
+              const nameEn = app.name_en?.toLowerCase() || '';
+              const keywords = [...(app.keywords_ar || []), ...(app.keywords_en || [])].join(' ').toLowerCase();
+              
+              const moviesRelated = nameAr + nameEn + keywords;
+              const isMoviesRelated = moviesRelated.includes('cinema') ||
+                                     moviesRelated.includes('movie') ||
+                                     moviesRelated.includes('فيلم') ||
+                                     moviesRelated.includes('دراما') ||
+                                     moviesRelated.includes('مسلسل') ||
+                                     moviesRelated.includes('سينمانا') ||
+                                     moviesRelated.includes(' الاسطورة');
+              
+              if (isMoviesRelated && !addedIds.has(app.id)) {
+                results.push(app);
+                addedIds.add(app.id);
+              }
+            }
+          });
+        }
+        
+        // خاصة بالتصميم: إضافة أي تطبيقات تحتوي على كلمات التصميم
+        if (categoryId === 'design') {
+          embeddedAppsData.apps.forEach(app => {
+            const nameAr = app.name_ar?.toLowerCase() || '';
+            const nameEn = app.name_en?.toLowerCase() || '';
+            const keywords = [...(app.keywords_ar || []), ...(app.keywords_en || [])].join(' ').toLowerCase();
+            
+            const designRelated = nameAr + nameEn + keywords;
+            const isDesignRelated = designRelated.includes('capcut') ||
+                                   designRelated.includes('photoshop') ||
+                                   designRelated.includes('picsart') ||
+                                   designRelated.includes('insta') ||
+                                   designRelated.includes('filter') ||
+                                   designRelated.includes('effect');
+            
+            if (isDesignRelated && !addedIds.has(app.id)) {
+              results.push(app);
+              addedIds.add(app.id);
+            }
+          });
+        }
       }
     });
     
@@ -62,6 +157,25 @@ const AppsSearch: React.FC = () => {
   
   const filteredApps = smartSearch(searchQuery);
   
+  // تحديد نوع البحث للمستخدم
+  const getSearchType = () => {
+    const query = searchQuery.toLowerCase().trim();
+    
+    if (['رياضة', 'رياضه', 'الرياضية', 'رياضي', 'مباريات', 'مباراة', 'كورة', 'كرة', 'sports', 'match', 'football', 'soccer', 'يلا شوت', 'kora', 'بين سبورت', 'bein'].some(word => query.includes(word))) {
+      return 'تطبيقات الرياضة والبث الرياضي';
+    } else if (['افلام', 'أفلام', 'مسلسلات', 'مسلسل', 'فيلم', 'سينما', 'مشاهدة', 'movies', 'series', 'cinema', 'سينمانا', 'cinemana', 'شاهد', 'watch'].some(word => query.includes(word))) {
+      return 'تطبيقات الأفلام والمسلسلات';
+    } else if (['تصميم', 'مونتاج', 'تعديل', 'صور', 'فيديو', 'design', 'edit', 'photo', 'video', 'فوتوشوب', 'photoshop'].some(word => query.includes(word))) {
+      return 'تطبيقات التصميم والمونتاج';
+    } else if (['بث', 'قنوات', 'تلفزيون', 'تلفاز', 'iptv', 'live', 'tv', 'channels'].some(word => query.includes(word))) {
+      return 'تطبيقات البث المباشر';
+    } else if (['واتساب', 'whatsapp', 'انستقرام', 'instagram', 'تيك توك', 'tiktok', 'سناب', 'snap'].some(word => query.includes(word))) {
+      return 'التطبيقات المعدلة';
+    } else {
+      return 'نتائج البحث';
+    }
+  };
+  
   return (
     <div className="animate-fadeIn">
       {/* العنوان */}
@@ -69,7 +183,7 @@ const AppsSearch: React.FC = () => {
         <h2 className="text-3xl font-bold mb-4">🔍 بحث التطبيقات الذكي</h2>
         <p className="text-gray-400 mb-2">ابحث عن أي تطبيق تريده من بين 140 تطبيق</p>
         <p className="text-gray-500 text-sm">
-          جرّب: واتساب، سينمانا، رياضة، الأسطورة، تصميم، أفلام
+          جرّب: واتساب، سينمانا، رياضة، الأسطورة، تصميم، أفلام، بين سبورت
         </p>
       </div>
       
@@ -81,7 +195,7 @@ const AppsSearch: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ابحث هنا... (مثال: رياضة، أفلام، واتساب، تصميم)"
+            placeholder="ابحث هنا... (مثال: رياضة، أفلام، تصميم، واتساب، بين سبورت)"
             className="w-full pr-12 pl-4 py-4 rounded-lg bg-gray-800 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
             style={{ direction: 'rtl' }}
           />
@@ -102,12 +216,13 @@ const AppsSearch: React.FC = () => {
           <p className="text-gray-400 text-sm mb-3 text-center">اختصارات سريعة:</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {[
-              { label: '⚽ رياضة', query: 'رياضة' },
-              { label: '🎬 أفلام', query: 'أفلام' },
-              { label: '🎨 تصميم', query: 'تصميم' },
-              { label: '💎 واتساب', query: 'واتساب' },
+              { label: '⚽ رياضة + بث', query: 'رياضة' },
+              { label: '🎬 أفلام + مسلسلات', query: 'أفلام' },
+              { label: '🎨 تصميم + مونتاج', query: 'تصميم' },
+              { label: '💎 واتساب + تطبيقات معدلة', query: 'واتساب' },
               { label: '📺 بث مباشر', query: 'iptv' },
-              { label: '🤖 ذكاء اصطناعي', query: 'ذكاء' }
+              { label: '🤖 ذكاء اصطناعي', query: 'ذكاء' },
+              { label: '🏆 بين سبورت', query: 'بين سبورت' }
             ].map((item, index) => (
               <button
                 key={index}
@@ -129,7 +244,7 @@ const AppsSearch: React.FC = () => {
               <p className="text-lg">لم نجد أي تطبيقات 😢</p>
             ) : (
               <p className="text-lg">
-                وجدنا <span className="text-red-400 font-bold">{filteredApps.length}</span> تطبيق 🎉
+                وجدت <span className="text-red-400 font-bold">{filteredApps.length}</span> تطبيق في {getSearchType()} 🎉
               </p>
             )}
           </div>
@@ -139,7 +254,7 @@ const AppsSearch: React.FC = () => {
           <div className="text-center py-8">
             <p className="text-gray-400 mb-4">جرّب البحث عن:</p>
             <div className="flex flex-wrap gap-2 justify-center">
-              {['رياضة', 'أفلام', 'تصميم', 'واتساب', 'سينمانا'].map((suggestion, index) => (
+              {['رياضة', 'أفلام', 'تصميم', 'واتساب', 'سينمانا', 'بين سبورت'].map((suggestion, index) => (
                 <button
                   key={index}
                   onClick={() => setSearchQuery(suggestion)}
@@ -167,6 +282,9 @@ const AppsSearch: React.FC = () => {
                     {app.name_ar}
                   </a>
                 </p>
+                <div className="text-sm text-gray-500 mt-1">
+                  الفئة: {app.category} • كلمات: {app.keywords_ar?.slice(0, 2).join(', ')}
+                </div>
               </div>
             ))}
           </div>
@@ -177,25 +295,41 @@ const AppsSearch: React.FC = () => {
       {!searchQuery && (
         <div className="mt-12 max-w-2xl mx-auto">
           <div className="bg-gray-800 rounded-lg p-6">
-            <h3 className="text-xl font-bold mb-4 text-center">💡 نصائح للبحث</h3>
-            <ul className="space-y-2 text-gray-300">
-              <li className="flex items-start gap-2">
-                <span className="text-red-400">•</span>
-                <span>اكتب "رياضة" أو "الرياضية" لعرض جميع تطبيقات الرياضة</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-red-400">•</span>
-                <span>اكتب "أفلام" أو "سينما" لعرض تطبيقات الأفلام</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-red-400">•</span>
-                <span>اكتب "تصميم" أو "مونتاج" لعرض تطبيقات التصميم</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-red-400">•</span>
-                <span>ابحث باسم التطبيق مباشرة: "واتساب"، "سينمانا"، "الأسطورة"</span>
-              </li>
-            </ul>
+            <h3 className="text-xl font-bold mb-4 text-center">💡 نصائح للبحث الذكي</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="font-bold text-red-400 mb-2">⚽ الرياضة:</h4>
+                <ul className="text-gray-300 text-sm space-y-1">
+                  <li>• "رياضة" → 10 تطبيقات (sports + IPTV الرياضية)</li>
+                  <li>• "بين سبورت" → تطبيقات البث الرياضي</li>
+                  <li>• "يلا شوت" → تطبيقات متابعة المباريات</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-bold text-red-400 mb-2">🎬 الأفلام:</h4>
+                <ul className="text-gray-300 text-sm space-y-1">
+                  <li>• "أفلام" → 33 تطبيق أفلام + مسلسلات</li>
+                  <li>• "سينمانا" → تطبيقات السينما العربية</li>
+                  <li>• "الأسطورة" → منصة الأفلام</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-bold text-red-400 mb-2">🎨 التصميم:</h4>
+                <ul className="text-gray-300 text-sm space-y-1">
+                  <li>• "تصميم" → 17 تطبيق تصميم ومونتاج</li>
+                  <li>• "مونتاج" → تطبيقات تعديل الفيديو</li>
+                  <li>• "صور" → تطبيقات تعديل الصور</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-bold text-red-400 mb-2">💎 التطبيقات المعدلة:</h4>
+                <ul className="text-gray-300 text-sm space-y-1">
+                  <li>• "واتساب" → واتساب الذهبي</li>
+                  <li>• "انستقرام" → انستقرام معدلة</li>
+                  <li>• "تيك توك" → تيك توك معدلة</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       )}
