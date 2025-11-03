@@ -50,20 +50,6 @@ const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onLogoClic
           </div>
         </div>
         
-        {/* زر AI Tools */}
-        <button 
-          onClick={onGoToAITools} 
-          title="AI Tools" 
-          aria-label="AI Tools"
-          className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full transition-all duration-300 transform hover:scale-110 ${
-            currentView === 'aiTools' 
-            ? 'btn-primary text-white shadow-lg' 
-            : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
-          }`}
-        >
-          <span className="font-bold text-xs sm:text-sm md:text-base">AI</span>
-        </button>
-        
         {/* زر آخر أخبار الذكاء الاصطناعي */}
         <button 
           onClick={onGoToAINews} 

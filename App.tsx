@@ -499,7 +499,7 @@ const App: React.FC = () => {
   const renderHomeView = () => (
     <div>
       {/* مستطيل آخر أخبار الذكاء الاصطناعي */}
-      <AINewsSection />
+      <AINewsSection onViewMore={() => setCurrentView('aiNews')} />
       
       <CategoryTabs />
       
