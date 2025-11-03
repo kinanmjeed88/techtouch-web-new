@@ -168,3 +168,16 @@ export const XIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
   </svg>
 );
+
+export const ExternalLinkIcon: React.FC<IconProps> = ({ className = "w-5 h-5" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H7.5A1.5 1.5 0 006 7.5v9A1.5 1.5 0 007.5 18h9a1.5 1.5 0 001.5-1.5v-6a1.5 1.5 0 00-1.5-1.5H14" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 14H7.5A1.5 1.5 0 006 12.5v0a1.5 1.5 0 001.5-1.5H14" />
+  </svg>
+);
+
+export const ChevronDownIcon: React.FC<IconProps> = ({ className = "w-5 h-5" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+  </svg>
+);

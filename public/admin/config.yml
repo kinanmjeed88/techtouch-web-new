@@ -131,3 +131,49 @@ collections:
               - { label: "كلمات مفتاحية بالعربية", name: "keywords_ar", widget: "list", required: false }
               - { label: "كلمات مفتاحية بالإنجليزية", name: "keywords_en", widget: "list", required: false }
               - { label: "الوصف (اختياري)", name: "description", widget: "text", required: false }
+
+  - name: "ai_content"
+    label: "محتوى الذكاء الاصطناعي"
+    folder: "public/data/ai-content"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - { label: "العنوان", name: "title", widget: "string", required: true }
+      - { label: "الوصف", name: "description", widget: "text", required: true }
+      - { label: "الفئة", name: "category", widget: "select", options: ["ابتكارات", "مواقع جديدة", "اكتشافات", "أدوات"], required: true }
+      - { label: "الرابط", name: "link", widget: "string", required: false }
+      - { label: "التاريخ", name: "date", widget: "datetime", format: "YYYY-MM-DD", required: true }
+      - { label: "الكلمات المفتاحية", name: "keywords", widget: "list", default: [] }
+      - { label: "نشط", name: "published", widget: "boolean", default: true }
+      - { label: "أولوية العرض", name: "priority", widget: "number", default: 0, min: 0, max: 100 }
+
+  - name: "ai_settings"
+    label: "إعدادات الذكاء الاصطناعي"
+    files:
+      - file: "public/data/ai-settings.json"
+        label: "إعدادات قسم أخبار الذكاء الاصطناعي"
+        name: "ai_settings"
+        fields:
+          - { label: "تفعيل قسم أخبار الذكاء الاصطناعي", name: "ai_news_enabled", widget: "boolean", default: true }
+          - { label: "عنوان القسم", name: "ai_news_title", widget: "string", default: "آخر أخبار الذكاء الاصطناعي" }
+          - { label: "وصف القسم", name: "ai_news_description", widget: "text", default: "اكتشف أحدث الابتكارات والأدوات والمواقع الجديدة في عالم الذكاء الاصطناعي" }
+          - { label: "عدد المقالات في كل تحميل", name: "articles_per_load", widget: "number", default: 5, min: 1, max: 20 }
+          - { label: "تحديث تلقائي (بالساعات)", name: "auto_update_hours", widget: "number", default: 24, min: 1, max: 168 }
+          - { label: "تفعيل البحث الذكي", name: "enable_smart_search", widget: "boolean", default: true }
+          - { label: "تفعيل فلترة الفئات", name: "enable_category_filter", widget: "boolean", default: true }
+          - { label: "تفعيل زر تحميل المزيد", name: "enable_load_more", widget: "boolean", default: true }
+          - { label: "رسالة الترحيب", name: "welcome_message", widget: "text", default: "مرحباً بك في موقع TechTouch لأحدث أخبار الذكاء الاصطناعي" }
+          - label: "مصادر البحث"
+            name: "search_sources"
+            widget: "list"
+            default: ["Google", "Bing", "OpenAI", "GitHub"]
+          - { label: "تكرار التحديث (بالساعات)", name: "update_frequency", widget: "number", default: 24, min: 1, max: 168 }
+          - { label: "الحد الأقصى لعدد النتائج", name: "max_results", widget: "number", default: 5, min: 1, max: 20 }
+          - label: "الكلمات المحظورة"
+            name: "blocked_keywords"
+            widget: "list"
+            default: []
+          - label: "مصطلحات البحث المفضلة"
+            name: "preferred_terms"
+            widget: "list"
+            default: ["ذكاء اصطناعي", "AI", "machine learning", "deep learning"]

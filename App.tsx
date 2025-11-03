@@ -8,6 +8,7 @@ import PostCard from './components/PostCard';
 import Pagination from './components/Pagination';
 import SkeletonLoader from './components/SkeletonLoader';
 import AITools from './components/AITools';
+import AINewsSection from './components/AINewsSection';
 import ProfileModal from './components/ProfileModal';
 import type { Category, Post, SiteSettings, Profile } from './types';
 
@@ -486,6 +487,9 @@ const App: React.FC = () => {
   
   const renderHomeView = () => (
     <div>
+      {/* مستطيل آخر أخبار الذكاء الاصطناعي */}
+      <AINewsSection />
+      
       <CategoryTabs />
       
       {loading ? <SkeletonLoader /> : filteredPosts.length > 0 ? (
