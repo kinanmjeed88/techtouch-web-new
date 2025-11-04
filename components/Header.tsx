@@ -50,20 +50,18 @@ const Header: React.FC<HeaderProps> = ({ onSearch, logoUrl, siteName, onLogoClic
           </div>
         </div>
         
-        {/* زر آخر أخبار الذكاء الاصطناعي */}
+        {/* زر AI Tools */}
         <button 
-          onClick={onGoToAINews} 
-          title="آخر أخبار الذكاء الاصطناعي" 
-          aria-label="آخر أخبار الذكاء الاصطناعي"
-          className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-3 rounded-lg transition-all duration-300 transform hover:scale-105 text-xs sm:text-sm font-medium ${
-            currentView === 'aiNews' 
-            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg' 
-            : 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 hover:from-purple-500/30 hover:to-blue-500/30 hover:text-white border border-purple-400/30'
+          onClick={onGoToAITools} 
+          title="AI Tools" 
+          aria-label="AI Tools"
+          className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full transition-all duration-300 transform hover:scale-110 ${
+            currentView === 'aiTools' 
+            ? 'btn-primary text-white shadow-lg' 
+            : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
           }`}
         >
-          <SparklesIcon className="w-3 h-3 sm:w-4 sm:h-4" />
-          <span className="hidden xs:inline">أخبار AI</span>
-          <span className="xs:hidden">AI</span>
+          <span className="font-bold text-xs sm:text-sm md:text-base">AI</span>
         </button>
       </div>
     </header>
