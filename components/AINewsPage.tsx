@@ -38,6 +38,7 @@ interface AINewsPageProps {
 
 const AINewsPage: React.FC<AINewsPageProps> = ({ onBack }) => {
   const [displayedContent, setDisplayedContent] = useState<AIContent[]>([]);
+  const [allAvailableContent, setAllAvailableContent] = useState<AIContent[]>([]);
   const [currentCategory, setCurrentCategory] = useState<string>('جميع');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -84,26 +85,28 @@ const AINewsPage: React.FC<AINewsPageProps> = ({ onBack }) => {
       const allContent: AIContent[] = await response.json();
       const publishedContent = allContent.filter(item => item.published !== false);
       
-      let content: AIContent[];
+      let filteredContent: AIContent[];
       
       if (category === 'جميع') {
         // ترتيب حسب الأولوية ثم تاريخ
-        content = publishedContent
-          .sort((a, b) => (b.priority || 0) - (a.priority || 0))
-          .slice(0, aiSettings?.articles_per_load || 8);
+        filteredContent = publishedContent
+          .sort((a, b) => (b.priority || 0) - (a.priority || 0));
       } else {
-        content = publishedContent
+        filteredContent = publishedContent
           .filter(item => item.category === category)
-          .sort((a, b) => (b.priority || 0) - (a.priority || 0))
-          .slice(0, aiSettings?.articles_per_load || 8);
+          .sort((a, b) => (b.priority || 0) - (a.priority || 0));
       }
       
-      setDisplayedContent(content);
+      // حفظ جميع المحتوى المتاح
+      setAllAvailableContent(filteredContent);
+      // عرض أول دفعة فقط
+      setDisplayedContent(filteredContent.slice(0, aiSettings?.articles_per_load || 8));
     } catch (error) {
       console.error('خطأ في تحميل المحتوى:', error);
       // في حالة الخطأ، استخدم البيانات المحلية كبديل
       const fallbackContent = getFallbackContent(category);
-      setDisplayedContent(fallbackContent);
+      setAllAvailableContent(fallbackContent);
+      setDisplayedContent(fallbackContent.slice(0, aiSettings?.articles_per_load || 8));
     } finally {
       setIsLoading(false);
     }
@@ -259,30 +262,22 @@ const AINewsPage: React.FC<AINewsPageProps> = ({ onBack }) => {
   const loadMore = () => {
     setIsLoading(true);
     
-    setTimeout(async () => {
+    setTimeout(() => {
       try {
-        const response = await fetch('/data/ai-content.json');
-        if (!response.ok) {
-          throw new Error('فشل في تحميل البيانات');
+        // حساب الفهرس الحالي
+        const currentLength = displayedContent.length;
+        const nextBatchSize = aiSettings?.articles_per_load || 6;
+        
+        // أخذ الدفعة التالية من المحتوى المتاح
+        const additionalContent = allAvailableContent.slice(
+          currentLength, 
+          currentLength + nextBatchSize
+        );
+        
+        // إضافة المحتوى الجديد
+        if (additionalContent.length > 0) {
+          setDisplayedContent([...displayedContent, ...additionalContent]);
         }
-        
-        const allContent: AIContent[] = await response.json();
-        const publishedContent = allContent.filter(item => item.published !== false);
-        
-        let additionalContent: AIContent[];
-        
-        if (currentCategory === 'جميع') {
-          additionalContent = publishedContent
-            .sort((a, b) => (b.priority || 0) - (a.priority || 0))
-            .slice(displayedContent.length, displayedContent.length + (aiSettings?.articles_per_load || 6));
-        } else {
-          additionalContent = publishedContent
-            .filter(item => item.category === currentCategory)
-            .sort((a, b) => (b.priority || 0) - (a.priority || 0))
-            .slice(displayedContent.length, displayedContent.length + (aiSettings?.articles_per_load || 6));
-        }
-        
-        setDisplayedContent([...displayedContent, ...additionalContent]);
       } catch (error) {
         console.error('خطأ في تحميل المزيد:', error);
       } finally {
@@ -293,11 +288,10 @@ const AINewsPage: React.FC<AINewsPageProps> = ({ onBack }) => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ar-SA', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   // إذا كان القسم معطلاً، لا تعرض شيئاً
@@ -452,14 +446,14 @@ const AINewsPage: React.FC<AINewsPageProps> = ({ onBack }) => {
       )}
 
       {/* زر تحميل المزيد */}
-      {aiSettings?.enable_load_more && !isLoading && displayedContent.length > 0 && (
+      {aiSettings?.enable_load_more && !isLoading && displayedContent.length > 0 && displayedContent.length < allAvailableContent.length && (
         <div className="text-center">
           <button
             onClick={loadMore}
             className="flex items-center gap-2 mx-auto px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all font-medium text-sm sm:text-base"
           >
             <ChevronDownIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>المزيد من الأخبار</span>
+            <span>المزيد من الأخبار ({allAvailableContent.length - displayedContent.length} متبقية)</span>
           </button>
         </div>
       )}
