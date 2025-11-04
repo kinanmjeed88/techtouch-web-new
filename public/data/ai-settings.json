@@ -1,7 +1,7 @@
 {
   "ai_news_title": "اخر اخبار الذكاء الاصطناعي",
   "update_frequency": 24,
-  "ai_news_description": "🤖",
+  "ai_news_description": ".",
   "auto_update_hours": 24,
   "welcome_message": "مقالات تخص الذكاء الاصطناعي",
   "articles_per_load": 10,
