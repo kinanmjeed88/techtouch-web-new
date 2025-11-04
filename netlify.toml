@@ -1,6 +1,9 @@
 [build]
   # الأمر الذي سيتم تنفيذه لبناء الموقع
-  command = "npm run build"
+  command = "pnpm run build"
+  
+  # إعداد متغير البيئة لضمان استخدام pnpm
+  environment = { NPM_FLAGS = "" }
   
   # المجلد الذي يحتوي على الملفات النهائية بعد البناء
   publish = "dist"
