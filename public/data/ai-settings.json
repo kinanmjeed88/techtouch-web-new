@@ -1,13 +1,17 @@
 {
-  "ai_news_title": "اخر اخبار الذكاء الاصطناعي",
-  "update_frequency": 24,
+  "search_sources": [
+    "مصادر موثوقه"
+  ],
+  "ai_news_title": "اخر الاخبار للذكاء الاصطناعي",
+  "update_frequency": 1,
   "ai_news_description": ".",
-  "auto_update_hours": 24,
+  "preferred_terms": [],
+  "auto_update_hours": 1,
   "welcome_message": "مقالات تخص الذكاء الاصطناعي",
   "articles_per_load": 10,
   "ai_news_enabled": true,
   "enable_load_more": true,
-  "enable_smart_search": true,
+  "enable_smart_search": false,
   "max_results": 10,
   "enable_category_filter": true
 }
