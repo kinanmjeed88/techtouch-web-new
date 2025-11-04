@@ -320,7 +320,6 @@ const AINewsPage: React.FC<AINewsPageProps> = ({ onBack }) => {
           className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all text-sm sm:text-base"
         >
           <ArrowRightIcon className="w-4 h-4" />
-          <span>العودة</span>
         </button>
         
         <div className="flex items-center gap-3">
@@ -453,7 +452,7 @@ const AINewsPage: React.FC<AINewsPageProps> = ({ onBack }) => {
             className="flex items-center gap-2 mx-auto px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all font-medium text-sm sm:text-base"
           >
             <ChevronDownIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>المزيد من الأخبار ({allAvailableContent.length - displayedContent.length} متبقية)</span>
+            <span>عرض المزيد ({allAvailableContent.length - displayedContent.length} متبقية)</span>
           </button>
         </div>
       )}
